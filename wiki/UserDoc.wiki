@@ -103,13 +103,13 @@ For windows you should be able to launch ManiaLive by simple double-clicking on 
 === Troubleshooting ===
 php.exe is not a known commmand
 This means that you will need to add the path to your php.exe to your system's path environment varibale.
-To achieve this, go to Control Panel and open the System icon (Start -> Settings -> Control Panel -> System, or just Start -> Control Panel -> System for Windows XP/2003)	
-Go to the Advanced tab
-Click on the ‘Environment Variables’ button
-Look into the ‘System Variables’ pane
-Find the Path entry (you may need to scroll to find it)
-Double click on the Path entry
-Enter your PHP directory at the end, including ‘;’ before (e.g. ;C:\php)
+ # To achieve this, go to Control Panel and open the System icon (Start -> Settings -> Control Panel -> System, or just Start -> Control Panel -> System for Windows XP/2003)	
+ # Go to the Advanced tab
+ # Click on the ‘Environment Variables’ button
+ # Look into the ‘System Variables’ pane
+ # Find the Path entry (you may need to scroll to find it)
+ # Double click on the Path entry
+ # Enter your PHP directory at the end, including ‘;’ before (e.g. ;C:\php)
 
 == Linux ==
 On linux it's as easy as that. Just type “sh run” when your current directory is the ManiaLive root.
