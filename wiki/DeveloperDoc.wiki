@@ -167,3 +167,70 @@ Player drove a new best time on the current track.
 
 == onPlayerNewRank($player, $rank_old, $rank_new) ==
 Player climbed up or moved down in the rankings table of the current track.
+
+Ticker Event
+
+Disabled by default.
+Enable this in the plug-in's *onLoad* or *onReady* event:
+{{{
+$this->enableTickerEvent();
+}}}
+
+== onTick() ==
+Occurs every second.
+
+= Console and Logging =
+
+For the purpose of displaying text on the screen, there is the *writeConsole(string $text)* helper method that is inherited with the Plugin class. To log text into a plug-in specific log file, use the *writeLog(string $text)*.
+Never use the print or echo functions directly, because if necessary the intern Console class is going to write into the log file. For more freedom, you can also use the *\ManiaLive\Utilities\Console* and *\ManiaLive\Utilities\Logger* classes directly.
+
+= Plug-in Interaction =
+
+To interact between Plug-ins, you can use the intern method *setPublicMethod(string $method)* to expose a method from the plug-in to other loaded plug-ins. Plug-ins normally don't have access to each other, except you explicitly set a method to public.
+Once that is done, you can use *callPublicMethod(string $plugin_id, string $method, mixed $arg1, mixed $arg2 …)* to call a method from another plug-in, that has been set public before – of course.
+To check whether the plug-in exists, you can call *isPluginLoaded(string $plugin_id)* before, instead of adding the plug-in to the dependencies list.
+You should avoid adding dependencies as much as possible.
+
+= Storage Usage =
+
+The storage class, is used to avoid you to send request to the server to get datas. This class contain the following properties:
+
+  * *players* : which is an array containing *\ManiaLive\DedicatedApi\Structures\Player* detailed information. Those players are the people playing the current track and not those in spectator mod.
+  * *spectators* : this is an array containing *\ManiaLive\DedicatedApi\Structures\Player* detailed information.<br>Those players are the people connected as spectator on the server.
+  * *ranking* : is an sorted array containing the current ranking.<br>Each value is of type *\ManiaLive\DedicatedApi\Structures\Player*
+  * *challenges* : is an array of *\ManiaLive\DedicatedApi\Structures\Challenge*.<br>Those challenges are the current tracks set on the server.
+  * *currentChallenge*: is a *\ManiaLive\DedicatedApi\Structures\Challenge* representing the current track 
+  * *nextChallenge*: is a *\ManiaLive\DedicatedApi\Structures\Challenge* representing the next track, except if a restart challenge is done.
+  * *server*: is a *\ManiaLive\DedicatedApi\Structures\ServerOptions* which represents sur value in Config file of the dedicated server
+  * *gameInfos*: is a *\ManiaLive\DedicatedApi\Structures\GameInfos* which contains every information about the current game.
+  * *serverStatus*: is a *\ManiaLive\DedicatedApi\Structures\Status*. It indicate whether the server is stopped, or running
+  * *serverLogin*: is a string containing the login of the dedicated server.
+
+Each property is update when an event is fired by the dedicated server. This class is the first called by the ManiaLive core when it received a callback, so it’s data are allways up to date. If a data is stored in the storage system you shouldn’t need to call the server to get it. This class should be used as a read only system, do not try to edit or insert some data in any property.
+
+= Chat Commands =
+
+You want to have interaction between the people on your dedicated server and ManiaLive, then using chat commands will be the first and simplest step!
+The Plugin class once again offers an easy wrapper function to have callbacks executed when a specific command is entered in the game.
+*\ManiaLive\Features\ChatCommand\Command registerChatCommand(string $command_name, string $callback_method, integer $parameter_count = 0, boolean $add_login = false, array $authorizedLogin = array())*
+This might be almost self explanatory. First parameter takes the chat command, without the “/”, that needs to be entered in game. Second parameter is the name of the method that is executed. parameter_count defines how many parameters are expected after the command, separated by spaces. These will be set as parameters for the callback. If add login is set to true, then your callback additionally needs to have the login of the player as first parameter. authorizedLogin is an array of the players that are allowed to use your command. It is suggested to use the admin list that is managed in your config.ini. You can access it by using the *\ManiaLive\Features\Admin\AdminGroup* and call its static method *contains(string $login)* to check whether the player that has tried to use the chat command is registered to the admin group.
+
+= Databases =
+
+Using a database connection with ManiaLive is pretty easy.
+There are two types of databases that are supported by the core:
+  * MySQL
+  * SQLite
+
+Both connections support the same interface and can be used in the same way.
+If you want to create a connection, then it is recommended to use the static *\ManiaLive\Database\Connection \ManiaLive\Database\Connection::getConnection(string $host, string $username, string $password, string $database, string $type, int $port)*
+Should you require the same connection twice the currently established connection will be used instead of creating a new. If several plug-ins are using the same database, they ergo will share the connection.
+
+= Windowing System =
+
+Now that you know the basics of ManiaLive, the last thing you need to know is how to make your progress accessible to the big crowds on your server.
+The dedicated server allows us by passing it xml manialinks to draw an interface for specific players.
+ManiaLive brings this to a new level, you don’t have to know all details of formatting manialink pages and rendering them to xml. There are just three components that are used to draw elements onto the screen:
+  * *Elements* are the smallest units that can be drawn.<br>If you want to compare them with anything, then they are just like files on your disk.
+  * *Controls* consist of several elements or once again controls itself.<br>They can be used to group *components* (which is the umbrella term for either elements or controls) and combine them with logic, this way they can result in a versatile and reusable object, that you will be able to share between all your projects.<br>Put into comparison, this would be folders in your hard drive.
+  * *Windows* can contain components and additionally can be drawn onto the screen. They also offer helpers for positioning.
