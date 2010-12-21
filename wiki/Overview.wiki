@@ -1,3 +1,3 @@
 #sidebar TableOfContents
- * [UsrDoc User Documentation]
- * [DevDoc Developer Documentation]
+ * [UserDoc User Documentation]
+ * [DeveloperDoc Developer Documentation]
