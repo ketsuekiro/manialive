@@ -1,13 +1,169 @@
-#summary One-sentence summary of this page.
+#summary Documentation for Plugin Developers.
 
-= Introduction =
+= Folder Structure =
 
-Add your content here.
+To be able to develop plug-ins for ManiaLive you need to understand how files are arranged.
+Open the ManiaLive folder and take a look at what you find inside:<br>
+*config* : contains the configuration file(s).<br>
+*data* : holds files/sqlite databases for threading.<br>
+*libraries* : contains all code (core and plug-ins) of ManiaLive.<br>
+*logs* : self-explanatory, by default contains all log-files that are generated.<br>
+In the next step we take a closer look onto the libraries folder. It contains the “ManiaLive” and the “ManiaHome” package. At last you can also find a folder in there called “ManiaLivePlugins”, that of course is where you will begin writing.
 
+= The Libraries-Folder Structure =
 
-= Details =
+  # Class names are case sensitive and every word in the name starts with a capital letter.
+  # Namespaces are folders in the file-system.
+  # Classes have to be in files that have the same name and end with .php<br>class Example will be in the file Example.php
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+= The ManiaLivePlugins-Folder Structure =
+
+The “ManiaLivePlugins” folder will contain only sub-folders named after plug-in authors. Each of them contains sub-folders named after the plug-ins itself and in each of those folders you will find at least a php file that is named like the folder it is contained by, so for instance:
+ManiaLivePlugins/Bob/Dedimania/Dedimania.php
+Will be the main file for the plug-in named “Dedimania” and who's author is “Bob”.
+It is a good habit to always use the same author name. One way to avoid collisions with other plug-in authors is to use the unique Trackmania login.
+In ManiaLive sometimes there is used a plug-in-id. This consists of the author name of the plug-in, a backslash and the name of the plug-in (eg. Bob\Dedimania).
+Within the folder of a plug-in you can create your own file structure (you are restricted to use some conventions listed below).
+
+= Conventions for Creating Plug-ins =
+
+  # Every Plug-in needs to be located in the “ManiaLivePlugins" folder.	
+  # In “ManiaLivePlugins” there has to be a folder named after the plug-in's author.
+  # A plug-in is situated in a folder named after the plug-in's author. As for author name it is recommended to use the TM login to avoid naming collisions with other authors.	
+  # A Plug-in consists of a folder with the name of the plug-in.
+  # In the folder, that is named like the plug-in, there has to be a file which is named after the plug-in with “.php” extension.
+  # This file needs to have a definition for a class that also has the name of the plug-in.
+  # The class, which has got the plug-in's name, has to be inherited from the ManiaLive\Plug-inHandler\Plugin class.
+
+= Loading a Plug-in =
+
+You can load a plug-in that has been created using the conventions above by simply adding a line into your “config.ini”:<br>
+plug-ins.load[] = *Bob\Dedimania*<br>
+The bold text has to be replaced by the ID of your plug-in, which is described in “The Plug-in's Folder Structure”.
+To see what configuration is loaded check the Loader_pid.txt log in your logs folder.
+
+= The Plug-in Class =
+
+*\ManiaLive\PluginHandler\Plugin* is the base class for all plug-ins and provides the interface for all events that can occur.
+There are many helper methods that are built into the Plug-in class for beginners to keep ways short. If you are an experienced programmer, you can figure out how to use the different components that are wrapped into the helpers yourself.
+When you create your plug-in, you can specify how the loader will be treating it during the load process.
+
+= Set Plug-in Version =
+
+It is a good habit to increase a plug-in’s version number with every release and change of its features. This way all depending plug-ins know if they might not be supporting the current version anymore.
+Setting a version number is done by using the *setVersion(float $number)* method.
+
+= Add Dependencies =
+
+If your plug-in is using functionalities of a currently existing one, you can easily add a dependency to this.
+All dependencies are obligatory, so if a plug-in, that has been added to the dependency-list is not loaded - due to whatever - also every depending plug-in will fail to load.
+To add a dependency, use the following sample:
+
+{{{
+$dependency = new Dependency('Author\Plugin', 1, 2);
+$this->addDependency($dependency);
+}}}
+
+= Events =
+
+If you have created the plug-in file regarding the “Conventions for Creating Plug-ins” and added a line to the config.ini to load it, it won't be doing anything yet.
+One of the core components of ManiaLive is the event dispatching system.
+All of the plug-in's interaction is triggered by some event taking place in the core components.<br>
+When a plug-in is loaded it is being hooked to the so called Dispatcher.
+To react on events you simply need to define a method in your class with the corresponding name, that will be called every time this event occurs.<br>
+*Every plug-in will only be notified of the event types that it is enabled for.*<br>
+On start-up the only events that will be received are the “Plug-in Events”, any other category needs to be enabled.<br>
+In the following the different event types and its corresponding event methods are described.
+
+= Plug-in Events =
+
+== onInit() ==
+Called before the plug-in is actually loaded and registered for any events. After onInit is executed the loading process can still fail. This is why *onInit* should only be used to define plug-in specific properties that are important for the loading process. This can for instance be the version number or dependencies.
+
+== onLoad() ==
+Your plug-in has been accepted, but not all plug-ins have been loaded yet.
+So if you want to interact with some other plug-in, this is still the wrong place.
+
+== onReady() ==
+Plug-in loading is completely finished. If you now want to access interfaces of other plug-ins, this is the right place to do it.
+
+= Application Events =
+
+Disabled by default.
+Enable them in the plug-in's *onLoad* or *onReady* event:
+$this->enableApplicationEvents();
+
+== onRun() ==
+Is triggered directly after *onReady*, the only difference is that you need to enable the application events.
+
+== onPreLoop() ==
+The ManiaLive application is one big loop of instructions which is repeated up to 50 times per second. *onPreLoop* is executed on begin of every round, putting any code here can drastically decrease the performance of your application, so be aware!
+
+== onPostLoop() ==
+Is executed on every loop's round end.
+See *onPreLoop* for more details.
+
+== onTerminate() ==
+Executed when application is terminating in the usual way.
+
+= Dedicated Server Events =
+
+Disabled by default.
+Enable them in the plug-in's *onLoad* or *onReady* event:
+{{{
+$this->enableDedicatedEvents();
+}}}
+You can find a detailed explanation of the dedicated server's events in the “ListCallbacks.html” in the same folder as the “TrackmaniaServer.exe“ can be found.
+To get the corresponding method for a callback, you just prefix the callback's name with an “on”. The callback “PlayerConnect” for instance becomes *onPlayerConnect*.
+Parameters remain unchanged.
+
+= Windowing Events =
+
+Disabled by default.
+Enable them in the plug-in's *onLoad* or *onReady* event:
+{{{
+$this->enableWindowingEvents();
+}}}
+
+== onWindowClose($login, $window) ==
+
+A window has been closed on some player's screen.
+
+= Threading Events =
+
+Disabled by default.
+Enable them in the plug-in's *onLoad* or *onReady* event:
+{{{
+$this->enableThreadingEvents();
+}}}
+
+== onThreadStart($thread) ==
+A Thread has been started successfully.
+
+== onThreadDies($thread) ==
+A thread that is not busy did not respond to a ping within a given time window.
+It will be restarted.
+
+== onThreadTimesOut($thread) ==
+Thread has been working for too long and is not responding.
+Will be killed and restarted.
+
+== onThreadRestart($thread) ==
+A thread that has either died or timed out is restarted.
+
+= Storage Events =
+
+Disabled by default.
+Enable this in the plug-in's *onLoad* or *onReady* event:
+{{{
+$this->enableStorageEvents();
+}}}
+
+== onPlayerNewBestScore($player, $score_old, $score_new) ==
+Player got a new best score on the current track.
+
+== onPlayerNewBestTime($player, $best_old, $best_new) ==
+Player drove a new best time on the current track.
+
+== onPlayerNewRank($player, $rank_old, $rank_new) ==
+Player climbed up or moved down in the rankings table of the current track.
