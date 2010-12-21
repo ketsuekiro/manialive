@@ -1,5 +1,7 @@
 #summary Documentation for Plugin Developers.
 
+<wiki:toc max_depth="1" />
+
 = Folder Structure =
 
 To be able to develop plug-ins for ManiaLive you need to understand how files are arranged.
