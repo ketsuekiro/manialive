@@ -11,7 +11,7 @@
   * Php SQLite Extension`*`
 
 
-,,`*`only needed if Threading enabled.,,
+,,*only needed if Threading enabled.,,
 
 
 = Introduction to Configuration =
