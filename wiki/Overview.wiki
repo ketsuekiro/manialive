@@ -1,4 +1,6 @@
 #sidebar TableOfContents
   * [UserDoc User Documentation]
-    * [UserDoc#Requirements Requirements]
   * [DeveloperDoc Developer Documentation]
+  * [Examples]
+    * [ExampleThread Howto Threading] 
+    * [ExampleWindow Window Creation] 
