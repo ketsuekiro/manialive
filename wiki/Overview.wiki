@@ -1,4 +1,4 @@
 #sidebar TableOfContents
   * [UserDoc User Documentation]
-    <wiki:toc max_depth="1" />
+    * [UserDoc#Requirements Requirements]
   * [DeveloperDoc Developer Documentation]
