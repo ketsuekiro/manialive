@@ -234,3 +234,105 @@ ManiaLive brings this to a new level, you don’t have to know all details of fo
   * *Elements* are the smallest units that can be drawn.<br>If you want to compare them with anything, then they are just like files on your disk.
   * *Controls* consist of several elements or once again controls itself.<br>They can be used to group *components* (which is the umbrella term for either elements or controls) and combine them with logic, this way they can result in a versatile and reusable object, that you will be able to share between all your projects.<br>Put into comparison, this would be folders in your hard drive.
   * *Windows* can contain components and additionally can be drawn onto the screen. They also offer helpers for positioning.
+
+== Creating a Window ==
+
+You start by creating a PHP-file that is named just like the window. Usually this file is located in the plug-in folder and within a ”Gui” and further more a “Windows” folder.
+The “Gui” folder is the super folder for all graphical components and thus contains the “Windows” folder, which is predestined for all Windows components.
+Editing this file you will create a class inside that has once again the name of the window (pay attention to case sensitive naming).
+Specified class will need to be inherited from *\ManiaLive\Gui\Windowing\Window*, the base class for all windows.
+For windows there are four methods that can be overwritten, to define the behaviour and look of the window depending on what is happening:
+
+=== initializeComponents() ===
+This will be executed only once the window is being created the first time, you don’t need to draw it on the screen. It will be performed just the first time you are mentioning this window anywhere in your code. So this is the place where you should, as the name implies, create the components that you want to have on your window.
+Components are added to a Window in two steps (this also applies for adding to a Control), first you instanciate the class, then you use the Window’s
+*addComponent(ManiaLive\Gui\Toolkit\Drawable $component)*-method to assign this component.
+Depending on whether the size of the Window is static or may be changed during the runtime you will position its components either in *initializeComponents* or *onShow*.
+
+=== onShow() ===
+Is called every time the *show()* method of the window is being called, thus on every refresh.
+If you want to scale and reposition your components, then do this here.
+
+=== onHide() ===
+Called when the window is being removed from the screen.
+If you want to disable certain events while the window is not on the screen.
+
+=== onRecover() ===
+Executed whenever the window has been hidden and is recovered back to the displayed state.
+
+== Important Namespaces and its Classes ==
+
+For each of the existing component types there are already predefined namespaces that contain a set of helpful objects that were created during the use of ManiaLive until now.
+
+=== \ManiaLive\Gui\Toolkit\Elements ===
+
+For a further description of these elements, see the ManiaLib documentation.
+The process of instantiating and using them should be almost the same, except you don’t call the save method, but the addComponent method of the component that you want to draw it on.
+  * *Audio*
+  * *BgRaceScore2*
+  * *Bgs1*
+  * *Bgs1InRace*
+  * *BgsChallengeMedals*
+  * *BgsPlayerCard*
+  * *Button*
+  * *Element*
+  * *Entry*
+  * *FileEntry*
+  * *Format*
+  * *Icons128x128_1*
+  * *Icons128x32_1*
+  * *Icons64x64_1*
+  * *IncludeManialink*
+  * *Label*
+  * *MedalsBig*
+  * *Music*
+  * *Quad*
+  * *Spacer*
+  * *Video*
+
+=== \ManiaLive\Gui\Windowing\Controls ===
+
+  * *ButtonResizeable*<br>Same as the normal Button element, but you can change its size.
+  * *Frame*<br>Add controls to a frame, position them and define size.<br>Apply a layout if you want.
+  * *PageNavigator*<br>Helps you building a navigation for a multiple paged window.
+  * *Panel*<br>Standard window background, you can even have a close button.
+  * *Tab*<br>Inherit this with another control and add an instance to 
+  * *Tabview*<br>Add controls of instance Panel, you will be able to choose one of them that will be displayed.
+
+=== \ManiaLive\Gui\Windowing\Windows ===
+
+  * Dialog<br>Create a simple window with predefined buttons.<br>Enable the window events for the plug-in and if dialog window is closed, get the answer property from the dialog.
+  * Info<br>Just display a simple window with message inside and title.
+
+= Threading =
+
+Last but not least, there is something called threading in ManiaLive.
+Most of you probably know what that is when speaking of normal software applications.
+ManiaLive is different, since PHP does not support threading, there had to be a different way to do time consuming stuff (slow database queries, remote procedures, blocking connections) without having a frozen main application.
+Another thing is security, a crashing thread can be restarted and the main loop will rest unaffected.
+Although the idea of multi-threading somehow sounds more exciting than the good old PHP style it is recommended to use it as rarely as possible!
+Due to the fact, that this is not an inbuilt functionality and relies on many other libraries/functions and also depends on what kind of system you are using, it is on its way of becoming a bit unstable again. For this reason there is a compatibility mode that can execute the work that has been assigned to threads in a sequential way. That way, if your plug-in does make use of the threading feature, but it has been deactivated, manialive will still be able to load and use it. All the work that normally would be assigned to another process will then be executed in the main loop and thus there might be some performance loss.
+
+== Creating a Thread ==
+
+The Plugin class contains a helper method that will create a thread:
+{{{
+createThread()
+}}}
+This will only create one Thread per plug-in, even if you call it more than once.
+This documentation will only explain how to manage threads with the plug-in intern helper functions. If you want to discover the full potential of the threading library, you will need to look up the source code files or the more detailed phpUml documentation.
+
+== Create Work ==
+
+Okay, so you have some stuff that you do want to be executed on the thread, but how do you need to prepare the data for the thread to be able to work with it?
+There is a class *\ManiaLive\Threading\Runnable* that you need to extend. This extended class now has a method *run()* that you will be able to overwrite. You can also add properties to the class to be able to store data or instructions. The run-method is what is exectued on the other process. Now that you have created your Runnable-class you need to instantiate it and if needed set properties.
+
+== Assign Work to a Thread ==
+
+You should have an object now that is a subtype of *\ManiaLive\Threading\Runnable*, to assign it to a thread there are two possibilities. (These methods are inherited with the Plugin class)
+First you can assign the work to any thread that currently is free or least busy. If there are several threads created by plug-ins you won’t know where your work will be processed.
+{{{
+sendWorkToThread(\ManiaLive\Threading\Runnable $work)
+}}}
+Using method number two, you will always assign work to the thread created by your plug-in. This might come in handy if, for instance, if you need a resistant connection (see Dedimania).
+sendWorkToOwnThread(ManiaLive\Threading\Runnable $work)
