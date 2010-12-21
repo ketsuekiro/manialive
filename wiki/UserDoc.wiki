@@ -1,6 +1,4 @@
 #labels Featured
-#Documentation of ManiaLive for Users
-
 <wiki:toc max_depth="2" />
 
 = Requirements =
