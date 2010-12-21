@@ -1,0 +1,126 @@
+#labels Featured
+#Documentation of ManiaLive for Users
+
+<wiki:toc max_depth="2" />
+
+= Requirements =
+
+  * Php at minimum version *5.3*	
+  * Windows or Linux System.
+  * Trackmania Dedicated Server
+  * Php SQLite Extension`*`
+
+
+,,`*`only needed if Threading enabled.,,
+
+
+= Introduction to Configuration =
+To get you started very quickly most configuration is already done. In fact, if you are running a just downloaded Trackmania Dedicated Server and you haven't done any changes apart from setting a server name, you should already be good to go.
+Otherwise you might want to take a look into the config folder which is located inside the application root and find the config.ini. This file will define the whole configurable behaviour of ManiaLive and its plugins.
+If you are familiar with programming, you should be able to understand how to make changes very easily, for those who don't, there are only a few types of elements you need to understand:
+
+== Elements ==
+To be interpreted correctly, each element has to be put on a single line and may itself not contain any line breaks.
+
+=== Comment ===
+The easiest of all is probably the comment.
+Beginning with a semicolon at the first character of the line and whatever text afterwards, it is used for making descriptions or formatting.
+
+; This is a line of the configuration that will be ignored.
+
+=== Assignment ===
+An assignment can be made by just writing the option name onto the left side of an equality sign and the value you want to set for it on the right side. Some options expect text, some numbers and others may only be switches which you can set using “On” or “Off”.
+
+logsPath = C:\Logs
+
+=== Assigning more than one value ===
+There are options which can take more than one value, for instance there might be an option to set the logins of the administrators that are allowed to control the server from an in-game interface. Using the global option style you would always overwrite the previously set value. To add another value to an option you simply add opening and closing brackets right after the name. This is not supported by every option, there should be comments with examples how to use each option.
+
+admins[] = login1
+admins[] = login2
+
+=== Configuring Sub-Modules ===
+Module and Option are divided by a simple full stop. Right after, without space, there follows the name of the setting. Then once again equals sign and the value you want to set. Previously defined rules apply.
+
+server.port = 5000
+
+=== Plugin Option ===
+To configure plugins you can simply use the ManiaLive's plugins sub-module to do that. After that use the plugin's ID (“Author\PluginName”) and put another full stop to separate the setting its name from the plugin's ID.
+
+plugins.Author\Plugin.message = 'Hello World'
+
+=== Host Overrides ===
+Finally there's the possibility to add configuration that is only applied on a specific computer. “[Hostname]” where the text within the brackets is the name of your computer on the local network. On windows you can get that name by simply typing “hostname” on the console.
+Everything after this tag (until the next one) will be only executed on your machine.
+
+= Startup Configuration =
+Here you will find a short list of the available built in settings.
+
+phpPath sets the path to your php executable file. If not set, then ManiaLive will use “php.exe” on Windows and “php” on Linux. Due to this, ManiaLive will not find it if you haven't added the php path to your system environment. You can then either do that, or overwrite phpPath to use the absolute path.
+
+With the option logsPath you can define where ManiaLive will put all the log-files. Default value is the logs folder within the application root folder.
+
+LogPrefix, if defined, puts this text in front of the name of every log-file that is created.
+
+You can set runtimeLog, if you are running ManiaLive as a background daemon and you don't have direct console output, then this will forward everything that normally is written onto the screen into a file called log_Runtime. Depending on if you use logsPath or logsPrefix the path to or name of the file may differ.
+
+globalErrorLog is a switch that can be “On” or “Off”.
+If activated it will create an error-log in your logs folder “GlobalErrorLog.txt”. There is a error log for every ManiaLive instance that you start, the global error log will contain errors from all instances.
+
+maxErrorCount sets the peak number of errors that may occur before the program is stopped.
+
+== Module Configuration ==
+=== Dedicated Server ===
+
+Establishes the dedicated server connection and can be configured with the following options: server.host, server.port, server.user, server.password.
+
+=== Administrators ===
+The admins sub-module manages a list of administrators. You can add new admins to the logins list, by adding a line:
+
+admins.logins[] = login
+
+=== Plugins ===
+Is a module, that dynamically loads plugins on application startup. Add a new plugin, that you want to load, by adding a line:
+
+plugins.load[] = author\plugin
+
+Each plugin that is loaded needs to be located in the “ManiaLivePlugins” folder and has to have two sub-folders, one named after the author and one after the plugin itself.
+In an author's folder there may be several plugin folders.
+
+=== Threading ===
+This module will, if supported by the plugin, assign blocking or work with heavy calculations to other processes. This way the application's ability to respond is reserved.
+If you are experiencing any problems, then try to disable threading on first step, the application then will switch in compatibility mode and will, very simple, try to emulate threading behaviour.
+Options supported are: threading.enabled, threading.busy_timeout, threading.ping_timeout, threading.sequential_timeout.
+
+=== ManiaHome ===
+You can enable this for creating a link between your server and ManiaHome. If you did, all achievements that are made on your server can be announced by plugins that are making use of this feature. This way, for instance, a plugin that manages records can inform all friends of a certain player that he just drove a new record on a server's track.
+Options supported: maniahome.enabled, maniahome.user, maniahome.password, maniahome.manialink
+
+= First Launch =
+Within your ManiaLive folder there will be two launcher files. One for windows and one for linux systems.
+
+== Windows ==
+For windows you should be able to launch ManiaLive by simple double-clicking on “run.bat”.
+
+=== Troubleshooting ===
+php.exe is not a known commmand
+This means that you will need to add the path to your php.exe to your system's path environment varibale.
+To achieve this, go to Control Panel and open the System icon (Start -> Settings -> Control Panel -> System, or just Start -> Control Panel -> System for Windows XP/2003)	
+Go to the Advanced tab
+Click on the ‘Environment Variables’ button
+Look into the ‘System Variables’ pane
+Find the Path entry (you may need to scroll to find it)
+Double click on the Path entry
+Enter your PHP directory at the end, including ‘;’ before (e.g. ;C:\php)
+
+== Linux ==
+On linux it's as easy as that. Just type “sh run” when your current directory is the ManiaLive root.
+
+= Logging =
+When there's an error, then usually the first thing that you want to do is to check the log-files. But where to find them?
+If you haven't changed the config settings for log-files, then the default place is the “logs” folder in the ManiaLive root. By default it contains the “log_Command.txt” which keeps track of the chat commands that have been used on the server, “log_Error.txt” if there have been errors during execution and “Loader_pid.txt” documenting the load process of the config-file for every instance that has been launched.
+If you have changed logsPath then all logs except the global error log and the loader logs will be created in this path. If you set a prefix then the names will vary.
+
+= History of Changes =
+== Version 1.0 ==
+Initial release, no changes!
