@@ -1,5 +1,75 @@
+ThreadingExample.php
 {{{
+<?php
 
-to be continued ...
+namespace ManiaLivePlugins\Examples\ThreadingExample;
 
+use ManiaLive\Utilities\Console;
+
+class ThreadingExample extends \ManiaLive\PluginHandler\Plugin
+{
+	protected $started = 0;
+	
+	function onInit() {}
+	
+	function onLoad()
+	{
+		$this->enableApplicationEvents();
+		$this->createThread();
+	}
+	
+	function onPreLoop()
+	{
+		echo "one loop!\n";
+	}
+	
+	function onReady()
+	{
+		$work = new DirtyWork(1000000);
+		for ($i = 0; $i < 100; $i++)
+		{
+			$this->sendWorkToOwnThread($work, 'onWorkDone');
+			$this->started++;
+		}
+	}
+	
+	function onWorkDone($command)
+	{
+		$this->started--;
+		if ($this->started == 0)
+			Console::println('All jobs have been done!');
+		else
+			Console::println("{$this->started} threads remain ...");
+	}
+}
+
+?>
+}}}
+
+DirtyWork.php
+{{{
+<?php
+
+namespace ManiaLivePlugins\Examples\Threading;
+
+class DirtyWork extends \ManiaLive\Threading\Runnable
+{
+	public $max = 100000;
+	
+	function __construct($max)
+	{
+		$this->max = $max;
+	}
+	
+	function run()
+	{
+		$i = 0;
+		while ($i < $this->max)
+		{
+			$i++;
+		}
+	}
+}
+
+?>
 }}}
