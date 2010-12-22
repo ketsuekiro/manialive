@@ -51,12 +51,12 @@ To see what configuration is loaded check the Loader_pid.txt log in your logs fo
 There are many helper methods that are built into the Plug-in class for beginners to keep ways short. If you are an experienced programmer, you can figure out how to use the different components that are wrapped into the helpers yourself.
 When you create your plug-in, you can specify how the loader will be treating it during the load process.
 
-= Set Plug-in Version =
+== Set Plug-in Version ==
 
 It is a good habit to increase a plug-in’s version number with every release and change of its features. This way all depending plug-ins know if they might not be supporting the current version anymore.
 Setting a version number is done by using the *setVersion(float $number)* method.
 
-= Add Dependencies =
+== Add Dependencies ==
 
 If your plug-in is using functionalities of a currently existing one, you can easily add a dependency to this.
 All dependencies are obligatory, so if a plug-in, that has been added to the dependency-list is not loaded - due to whatever - also every depending plug-in will fail to load.
