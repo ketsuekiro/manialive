@@ -1,7 +1,7 @@
 #summary Explains how to use a plug-in and its helper methods and classes.
 
 = Example Plugin =
-
+Contains examples how to interact with other plugins, use the storage class and also how plugins basically work.
 {{{
 <?php
 
