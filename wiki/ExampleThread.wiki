@@ -1,6 +1,9 @@
 = Threading Example =
 
 == ThreadingExample.php ==
+This plugin creates lots of work and then assignes it to a thread.
+If threading is enabled you will realize that the loop is still executed very often.
+You can now try to disable threading, then you will see how the main application and its reaction time would be effected.
 {{{
 <?php
 
