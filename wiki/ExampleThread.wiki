@@ -50,11 +50,11 @@ DirtyWork.php
 {{{
 <?php
 
-namespace ManiaLivePlugins\Examples\Threading;
+namespace ManiaLivePlugins\Examples\ThreadingExample;
 
 class DirtyWork extends \ManiaLive\Threading\Runnable
 {
-	public $max = 100000;
+	public $max;
 	
 	function __construct($max)
 	{
