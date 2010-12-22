@@ -1,6 +1,7 @@
 = Windowing Example =
 
 == WindowExample.php ==
+Plugin that will display the 'SimpleWindow' to any player that joins the server.
 {{{
 <?php
 
@@ -47,6 +48,7 @@ class WindowExample extends \ManiaLive\PluginHandler\Plugin
 }}}
 
 == SimpleWindow.php ==
+A window, that consists of a title bar and some text as content.
 {{{
 <?php
 // this line defines the namespace, this needs to match the relative path to
