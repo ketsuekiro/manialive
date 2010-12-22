@@ -73,7 +73,9 @@ class ThreadingExample extends \ManiaLive\PluginHandler\Plugin
 ?>
 }}}
 
-DirtyWork.php
+== DirtyWork.php ==
+An instance of this class can be sent to any thread that is running.
+If does nothing more than counting.
 {{{
 <?php
 
