@@ -335,7 +335,10 @@ There is a class *\ManiaLive\Threading\Runnable* that you need to extend. This e
 You should have an object now that is a subtype of *\ManiaLive\Threading\Runnable*, to assign it to a thread there are two possibilities. (These methods are inherited with the Plugin class)
 First you can assign the work to any thread that currently is free or least busy. If there are several threads created by plug-ins you won’t know where your work will be processed.
 {{{
-sendWorkToThread(\ManiaLive\Threading\Runnable $work)
+sendWorkToThread(\ManiaLive\Threading\Runnable $work, string $method = null)
 }}}
 Using method number two, you will always assign work to the thread created by your plug-in. This might come in handy if, for instance, if you need a resistant connection (see Dedimania).
-sendWorkToOwnThread(ManiaLive\Threading\Runnable $work)
+{{{
+sendWorkToOwnThread(ManiaLive\Threading\Runnable $work, string $method = null)
+}}}
+For the second parameter you can set a callback method within the current plugin class that will be executed once the work has been finished by the thread.
