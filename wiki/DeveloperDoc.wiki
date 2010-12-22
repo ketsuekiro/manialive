@@ -171,7 +171,7 @@ Player drove a new best time on the current track.
 === onPlayerNewRank($player, $rank_old, $rank_new) ===
 Player climbed up or moved down in the rankings table of the current track.
 
-Ticker Event
+== Ticker Event ==
 
 Disabled by default.
 Enable this in the plug-in's *onLoad* or *onReady* event:
