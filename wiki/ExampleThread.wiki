@@ -1,4 +1,6 @@
-ThreadingExample.php
+= Threading Example =
+
+== ThreadingExample.php ==
 {{{
 <?php
 
