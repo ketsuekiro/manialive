@@ -1,3 +1,5 @@
+#summary This example shows how to use the windowing system of ManiaLive.
+
 = Windowing Example =
 
 == WindowExample.php ==
