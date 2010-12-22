@@ -1,8 +1,58 @@
+= Windowing Example =
+
+== WindowExample.php ==
 {{{
+<?php
+
+// namespace as of php 5.3
+// see also the 'Conventions for Creating Plug-Ins'
+// and 'The Libraries-Folder Structure'
+namespace ManiaLivePlugins\Examples\WindowExample;
+
+// renaming
+use ManiaLivePlugins\Examples\WindowExample\Gui\Windows\SimpleWindow;
+
+// see the 'Conventions for Creating Plug-Ins' on what class name to use
+class WindowExample extends \ManiaLive\PluginHandler\Plugin
+{
+	function onInit() {}
+	
+	function onLoad()
+	{
+		// enable the server callbacks so we can trigger
+		// the window creation when a new player joins
+		$this->enableDedicatedEvents();
+	}
+	
+	function onPlayerConnect($login, $isSpectator)
+	{
+		// use the factory to create a new window for player
+		// that just joined our server.
+		$window = SimpleWindow::Create($login);
+		
+		// modify the window's height from the default size
+		$window->setSizeY(13);
+		
+		// set some properties that have been attached.
+		$window->setTitle('Welcome');
+		$window->setText("Welcome on my server,\nI hope you enjoy your stay!");
+		
+		// center the window on the screen and display it.
+		$window->centerOnScreen();
+		$window->show();
+	}
+}
+
+?>
+}}}
+
+== SimpleWindow.php ==
+{{{
+<?php
 // this line defines the namespace, this needs to match the relative path to
 // where your file is located, in general you only need to change the part
 // marked in yellow.
-namespace ManiaLivePlugins\Author\Plugin\Gui\Windows;
+namespace ManiaLivePlugins\Examples\WindowExample\Gui\Windows;
 
 // you need to rename every component, that you are using in the code.
 // for more elements to use, you can check the
@@ -13,7 +63,7 @@ use ManiaLive\Gui\Windowing\Controls\Panel;
 
 // here the actual creation process starts.
 // important: don’t forget to inherit the Window class.
-class Info extends \ManiaLive\Gui\Windowing\Window
+class SimpleWindow extends \ManiaLive\Gui\Windowing\Window
 {
 	// protected properties for every component that you add to your window.
 	// note: you can set public here to be able to access them from outside
@@ -22,13 +72,16 @@ class Info extends \ManiaLive\Gui\Windowing\Window
 	protected $text;
 	protected $panel;
 	protected $button;
-	
+
 	// the described initializeComponents method. Called on the first time
 	// the window is used.
 	// we initialize the components and add them to the window, so once the
 	// window is rendered, all its components will be too.
 	protected function initializeComponents()
 	{
+		// set a default size for the window.
+		$this->setSize(40, 30);
+		 
 		// creating the panel which serves, as described,
 		// as the window’s background
 		$this->panel = new Panel();
@@ -39,7 +92,7 @@ class Info extends \ManiaLive\Gui\Windowing\Window
 		$this->text = new Label();
 		$this->text->enableAutonewline();
 		$this->addComponent($this->text);
-		
+
 		// create the close button.
 		$this->button = new Icons64x64_1(3);
 		$this->button->setSubStyle(Icons64x64_1::Close);
@@ -50,10 +103,10 @@ class Info extends \ManiaLive\Gui\Windowing\Window
 		$this->button->setAction($this->callback('hide'));
 		$this->addComponent($this->button);
 	}
-	
+
 	// we haven’t got stuff to do when the window is being closed.
 	protected function onHide() {}
-	
+
 	// this is executed every time the window is drawn onto the screen.
 	// we will position and draw all elements here.
 	protected function onShow()
@@ -62,21 +115,21 @@ class Info extends \ManiaLive\Gui\Windowing\Window
 		// move it 1.6 units downwards.
 		// this will result in the right top corner.
 		$this->button->setPosition($this->sizeX - 5, 1.6);
-		
+
 		// stretch panel background to fill window size ...
 		$this->panel->setSize($this->sizeX, $this->sizeY);
-		
+
 		// position and resize text ...
 		$this->text->setPosition(2, 6);
 		$this->text->setSize($this->sizeX - 4, $this->sizeY - 6);
 	}
-	
+
 	// setter for the message text, our components are protected, remember?
 	function setText($text)
 	{
 		$this->text->setText($text);
 	}
-	
+
 	// same for the title.
 	function setTitle($title)
 	{
