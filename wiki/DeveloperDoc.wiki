@@ -1,4 +1,4 @@
-#summary Documentation for Plugin Developers.
+#summary Documentation for plug-in developers.
 #labels Featured
 
 <wiki:toc max_depth="2" />
