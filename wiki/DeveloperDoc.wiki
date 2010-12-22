@@ -78,38 +78,38 @@ To react on events you simply need to define a method in your class with the cor
 On start-up the only events that will be received are the “Plug-in Events”, any other category needs to be enabled.<br>
 In the following the different event types and its corresponding event methods are described.
 
-= Plug-in Events =
+== Plug-in Events ==
 
-== onInit() ==
+=== onInit() ===
 Called before the plug-in is actually loaded and registered for any events. After onInit is executed the loading process can still fail. This is why *onInit* should only be used to define plug-in specific properties that are important for the loading process. This can for instance be the version number or dependencies.
 
-== onLoad() ==
+=== onLoad() ===
 Your plug-in has been accepted, but not all plug-ins have been loaded yet.
 So if you want to interact with some other plug-in, this is still the wrong place.
 
-== onReady() ==
+=== onReady() ===
 Plug-in loading is completely finished. If you now want to access interfaces of other plug-ins, this is the right place to do it.
 
-= Application Events =
+== Application Events ==
 
 Disabled by default.
 Enable them in the plug-in's *onLoad* or *onReady* event:
 $this->enableApplicationEvents();
 
-== onRun() ==
+=== onRun() ===
 Is triggered directly after *onReady*, the only difference is that you need to enable the application events.
 
-== onPreLoop() ==
+=== onPreLoop() ===
 The ManiaLive application is one big loop of instructions which is repeated up to 50 times per second. *onPreLoop* is executed on begin of every round, putting any code here can drastically decrease the performance of your application, so be aware!
 
-== onPostLoop() ==
+=== onPostLoop() ===
 Is executed on every loop's round end.
 See *onPreLoop* for more details.
 
-== onTerminate() ==
+=== onTerminate() ===
 Executed when application is terminating in the usual way.
 
-= Dedicated Server Events =
+== Dedicated Server Events ==
 
 Disabled by default.
 Enable them in the plug-in's *onLoad* or *onReady* event:
@@ -120,7 +120,7 @@ You can find a detailed explanation of the dedicated server's events in the “L
 To get the corresponding method for a callback, you just prefix the callback's name with an “on”. The callback “PlayerConnect” for instance becomes *onPlayerConnect*.
 Parameters remain unchanged.
 
-= Windowing Events =
+== Windowing Events ==
 
 Disabled by default.
 Enable them in the plug-in's *onLoad* or *onReady* event:
@@ -128,11 +128,11 @@ Enable them in the plug-in's *onLoad* or *onReady* event:
 $this->enableWindowingEvents();
 }}}
 
-== onWindowClose($login, $window) ==
+=== onWindowClose($login, $window) ===
 
 A window has been closed on some player's screen.
 
-= Threading Events =
+== Threading Events ==
 
 Disabled by default.
 Enable them in the plug-in's *onLoad* or *onReady* event:
@@ -140,21 +140,21 @@ Enable them in the plug-in's *onLoad* or *onReady* event:
 $this->enableThreadingEvents();
 }}}
 
-== onThreadStart($thread) ==
+=== onThreadStart($thread) ===
 A Thread has been started successfully.
 
-== onThreadDies($thread) ==
+=== onThreadDies($thread) ===
 A thread that is not busy did not respond to a ping within a given time window.
 It will be restarted.
 
-== onThreadTimesOut($thread) ==
+=== onThreadTimesOut($thread) ===
 Thread has been working for too long and is not responding.
 Will be killed and restarted.
 
-== onThreadRestart($thread) ==
+=== onThreadRestart($thread) ===
 A thread that has either died or timed out is restarted.
 
-= Storage Events =
+== Storage Events ==
 
 Disabled by default.
 Enable this in the plug-in's *onLoad* or *onReady* event:
@@ -162,13 +162,13 @@ Enable this in the plug-in's *onLoad* or *onReady* event:
 $this->enableStorageEvents();
 }}}
 
-== onPlayerNewBestScore($player, $score_old, $score_new) ==
+=== onPlayerNewBestScore($player, $score_old, $score_new) ===
 Player got a new best score on the current track.
 
-== onPlayerNewBestTime($player, $best_old, $best_new) ==
+=== onPlayerNewBestTime($player, $best_old, $best_new) ===
 Player drove a new best time on the current track.
 
-== onPlayerNewRank($player, $rank_old, $rank_new) ==
+=== onPlayerNewRank($player, $rank_old, $rank_new) ===
 Player climbed up or moved down in the rankings table of the current track.
 
 Ticker Event
@@ -179,7 +179,7 @@ Enable this in the plug-in's *onLoad* or *onReady* event:
 $this->enableTickerEvent();
 }}}
 
-== onTick() ==
+=== onTick() ===
 Occurs every second.
 
 = Console and Logging =
