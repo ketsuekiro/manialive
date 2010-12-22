@@ -1,3 +1,5 @@
+#summary A fast introduction to threading.
+
 = Threading Example =
 
 == ThreadingExample.php ==
