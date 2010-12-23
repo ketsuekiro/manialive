@@ -49,10 +49,10 @@ logsPath = C:\Logs
 
 === Assigning more than one value ===
 There are options which can take more than one value, for instance there might be an option to set the logins of the administrators that are allowed to control the server from an in-game interface. Using the global option style you would always overwrite the previously set value. To add another value to an option you simply add opening and closing brackets right after the name. This is not supported by every option, there should be comments with examples how to use each option.
-
+{{{
 admins[] = login1
 admins[] = login2
-
+}}}
 === Configuring Sub-Modules ===
 Module and Option are divided by a simple full stop. Right after, without space, there follows the name of the setting. Then once again equals sign and the value you want to set. Previously defined rules apply.
 
