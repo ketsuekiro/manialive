@@ -62,7 +62,7 @@ class PluginExample extends \ManiaLive\PluginHandler\Plugin
 	function onPlayerNewBestTime($player, $best_old, $best_new)
 	{
 		// prepare a message
-		$message = 'Player ' .  . String::stripAllTmStyle($player->nickName) . ' just drove a new personal best time!';
+		$message = 'Player ' . String::stripAllTmStyle($player->nickName) . ' just drove a new personal best time!';
 		
 		// see whether the WindowExample has been loaded at least at version 1
 		if ($this->isPluginLoaded('Examples\WindowExample', 1))
