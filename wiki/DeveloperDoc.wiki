@@ -229,6 +229,29 @@ Both connections support the same interface and can be used in the same way.
 If you want to create a connection, then it is recommended to use the static *\ManiaLive\Database\Connection \ManiaLive\Database\Connection::getConnection(string $host, string $username, string $password, string $database, string $type, int $port)*
 Should you require the same connection twice the currently established connection will be used instead of creating a new. If several plug-ins are using the same database, they ergo will share the connection.
 
+= Utilities =
+
+In the namespace \ManiaLive\Utilities you will, apart from the Logger, Console,  find a lot of useful tools. This section will explain them.
+
+== Time ==
+
+You can use the Time class to convert a Trackmania timestamp into a well formatted time string.
+{{{
+Time::fromTM($timestamp, $signed = false)
+}}}
+Setting the second parameter to true
+
+== String ==
+
+This collection of methods removes color codes from Trackmania strings. There are always places in the code where you want to display a name of a track or a player, but with a unified look and feel. So if you want to protect your layout from TM formatting, these are the functions to use.
+
+The most important function probably is
+{{{
+String::stripColors($string)
+}}}
+which removes the color fromatting from a player's nickname or a challenge name.
+Take a look in the code documentation for the other methods.
+
 = Windowing System =
 
 Now that you know the basics of ManiaLive, the last thing you need to know is how to make your progress accessible to the big crowds on your server.
