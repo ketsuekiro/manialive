@@ -67,6 +67,27 @@ $dependency = new Dependency('Author\Plugin', 1, 2);
 $this->addDependency($dependency);
 }}}
 
+= Make a Plug-in Configurable =
+
+If you want to be able to configure your plugin from the global config.ini, then all you will have to do is to add a static public property to your class.<br>
+For instance you have a class like that:
+{{{
+<?php
+namespace ManiaLivePlugins\Example\Foobar;
+
+class Foobar extends \ManiaLive\PluginHandler\Plugin
+{
+	static $setting = 0;
+}
+?>
+}}}
+Now you could add a line in your config.ini
+{{{
+plugins.Example\Foobar.setting = 42
+}}}
+and your property would be overwritten when loading the plugin!<br>
+Easy, right?
+
 = Events =
 
 If you have created the plug-in file regarding the “Conventions for Creating Plug-ins” and added a line to the config.ini to load it, it won't be doing anything yet.
