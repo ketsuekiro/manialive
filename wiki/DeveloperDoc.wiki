@@ -191,8 +191,8 @@ Never use the print or echo functions directly, because if necessary the intern 
 
 To interact between Plug-ins, you can use the intern method *setPublicMethod(string $method)* to expose a method from the plug-in to other loaded plug-ins. Plug-ins normally don't have access to each other, except you explicitly set a method to public.
 Once that is done, you can use *callPublicMethod(string $plugin_id, string $method, mixed $arg1, mixed $arg2 …)* to call a method from another plug-in, that has been set public before – of course.
-To check whether the plug-in exists, you can call *isPluginLoaded(string $plugin_id)* before, instead of adding the plug-in to the dependencies list.
-You should avoid adding dependencies as much as possible.
+To check whether the plug-in exists, you can call *isPluginLoaded(string $plugin_id, float $min, float $max)* before, instead of adding the plug-in to the dependencies list.
+You should avoid adding dependencies as much as possible. Leave the parameters min and max out if you do not care about plug-in's version.
 
 = Storage Usage =
 
@@ -342,3 +342,8 @@ Using method number two, you will always assign work to the thread created by yo
 sendWorkToOwnThread(ManiaLive\Threading\Runnable $work, string $method = null)
 }}}
 For the second parameter you can set a callback method within the current plugin class that will be executed once the work has been finished by the thread.
+
+== Managing Threads ==
+
+You can activate the threading events to be informed about threads that timeout or crash.
+They will be restarted automatically and all jobs that are left will be assigned to the newly started process. If a process chrashs no jobs, except the one that has crashed the thread, will be lost.
