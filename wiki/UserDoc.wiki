@@ -31,7 +31,7 @@ Here is a sample of how to start a ManiaLive instance:
 
 = Introduction to Configuration =
 
-Otherwise you might want to take a look into the config folder which is located inside the application root and find the config-example.ini. This file will define the whole configurable behaviour of ManiaLive and its plugins.
+Otherwise you might want to take a look into the config folder which is located inside the application root and find the config-example.ini. This file will define the whole configurable behaviour of ManiaLive and its plugins.<br>
 ManiaLive will look for a config.ini by default. So if you install ManiaLive on your system for the first time, you need to copy and rename the example so that ManiaLive is able to find it.<br>
 If you are familiar with programming, you should be able to understand how to make changes very easily, for those who don't, there are only a few types of elements you need to understand:
 
