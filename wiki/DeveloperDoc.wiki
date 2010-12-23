@@ -1,5 +1,4 @@
 #summary Documentation for plug-in developers.
-#labels Featured
 
 <wiki:toc max_depth="2" />
 
@@ -13,11 +12,12 @@ Open the ManiaLive folder and take a look at what you find inside:<br>
 *logs* : self-explanatory, by default contains all log-files that are generated.<br>
 In the next step we take a closer look onto the libraries folder. It contains the “ManiaLive” and the “ManiaHome” package. At last you can also find a folder in there called “ManiaLivePlugins”, that of course is where you will begin writing.
 
-= The Libraries-Folder Structure =
+= General Conventions =
 
+  # Use namespaces instead of include or require statements!<br>In order for a class to be loaded automatically you need to stick to the following rules.
   # Class names are case sensitive and every word in the name starts with a capital letter.
-  # Namespaces are folders in the file-system.
-  # Classes have to be in files that have the same name and end with .php<br>class Example will be in the file Example.php
+  # Namespaces are folders in the file-system, so if you create a new class, make sure it is located in the right namespace!
+  # Classes have to be in files that have the same name and end with .php<br>class ManiaLive\Example will be in the file Example.php in the folder ManiaLive.
 
 = The !ManiaLivePlugins-Folder Structure =
 
