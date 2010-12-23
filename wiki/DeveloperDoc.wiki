@@ -304,8 +304,8 @@ The process of instantiating and using them should be almost the same, except yo
 
 === \ManiaLive\Gui\Windowing\Windows ===
 
-  * Dialog<br>Create a simple window with predefined buttons.<br>Enable the window events for the plug-in and if dialog window is closed, get the answer property from the dialog.
-  * Info<br>Just display a simple window with message inside and title.
+  * *Dialog*<br>Create a simple window with predefined buttons.<br>Enable the window events for the plug-in and if dialog window is closed, get the answer property from the dialog.
+  * *Info*<br>Just display a simple window with message inside and title.
 
 = Threading =
 
