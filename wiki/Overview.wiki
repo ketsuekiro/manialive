@@ -1,7 +1,7 @@
 #sidebar TableOfContents
   * [UserDoc User Documentation]
   * [DeveloperDoc Developer Documentation]
-  * [Examples]
+  * Examples
     * [ExamplePlugin Plugin Basics]
     * [ExampleThread Howto Threading] 
     * [ExampleWindow Window Creation] 
