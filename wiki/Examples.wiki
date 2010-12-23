@@ -1,5 +1,0 @@
-#summary This sections contains examples on some topics.
-
-Target is to have examples for every component that is used in ManiaLive.<br>
-That way it should be pretty easy for you to get started.<br>
-Just select one of the entries left.
