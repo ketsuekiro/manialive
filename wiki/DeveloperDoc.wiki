@@ -13,13 +13,13 @@ Open the ManiaLive folder and take a look at what you find inside:<br>
 *logs* : self-explanatory, by default contains all log-files that are generated.<br>
 In the next step we take a closer look onto the libraries folder. It contains the “ManiaLive” and the “ManiaHome” package. At last you can also find a folder in there called “ManiaLivePlugins”, that of course is where you will begin writing.
 
-= The Libraries-Folder Structure =
+= The Libraries´-´Folder Structure =
 
   # Class names are case sensitive and every word in the name starts with a capital letter.
   # Namespaces are folders in the file-system.
   # Classes have to be in files that have the same name and end with .php<br>class Example will be in the file Example.php
 
-= The ManiaLivePlugins-Folder Structure =
+= The ManiaLivePlugins´-´Folder Structure =
 
 The “ManiaLivePlugins” folder will contain only sub-folders named after plug-in authors. Each of them contains sub-folders named after the plug-ins itself and in each of those folders you will find at least a php file that is named like the folder it is contained by, so for instance:
 ManiaLivePlugins/Bob/Dedimania/Dedimania.php
