@@ -1,5 +1,5 @@
 #summary An introduction to ManiaLive for users.
-#labels Featured
+#labels Featured,Phase-Requirements,Phase-Deploy
 
 <wiki:toc max_depth="2" />
 
@@ -13,9 +13,19 @@
 
 ,,*only needed if Threading enabled.,,
 
+= First start =
+To get you started very quickly most configuration is already done. In fact, if you are running a just downloaded Trackmania Dedicated Server and you haven't done any changes apart from setting a server name, you should already be good to go.
+If you have made some small changes for example the xml-rpc port or the Super Admin Password you can use the command line configuration. Here is the parameters you can add in the launch script
+
+ * --help: displays the ManiaLive command line help
+ * --rpcport=xxx : xxx represents the xmlrpc to use for the connection to the server
+ * --address=xxx : xxx represents the address of the server, it should be an IP address or localhost
+ * --user=xxx : xxx represents the name of the user to use for the communication. It should be User, Admin or SuperAdmin
+ * --password=xxx : xxx represents the password relative to --user Argument
+ * --dedicated_cfg=xxx : xxx represents the name of the Dedicated configuration file to use to get the connection data. This file should be present in the Dedicated's config file.
+ * --manialive_cfg=xxx : xxx represents the name of the ManiaLive's configuration file. This file should be present in the ManiaLive's config file.
 
 = Introduction to Configuration =
-To get you started very quickly most configuration is already done. In fact, if you are running a just downloaded Trackmania Dedicated Server and you haven't done any changes apart from setting a server name, you should already be good to go.
 Otherwise you might want to take a look into the config folder which is located inside the application root and find the config.ini. This file will define the whole configurable behaviour of ManiaLive and its plugins.
 If you are familiar with programming, you should be able to understand how to make changes very easily, for those who don't, there are only a few types of elements you need to understand:
 
