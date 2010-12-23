@@ -15,7 +15,7 @@
 
 = First start =
 To get you started very quickly most configuration is already done. In fact, if you are running a just downloaded Trackmania Dedicated Server and you haven't done any changes apart from setting a server name, you should already be good to go.
-If you have made some small changes for example the xml-rpc port or the Super Admin Password you can use the command line configuration. Here is the parameters you can add in the launch script
+If you have made some small changes for example the xml-rpc port or the Super Admin Password you can use the command line configuration. Here are the parameters you can add in the launch script
 
  * --help: displays the ManiaLive command line help
  * --rpcport=xxx : xxx represents the xmlrpc to use for the connection to the server
@@ -30,13 +30,17 @@ Here is a sample of how to start a ManiaLive instance:
 `php.exe bootstrapper.php --dedicated_cfg=dedicated_cfg.txt --manialive_cfg=config.ini`
 
 = Introduction to Configuration =
-Otherwise you might want to take a look into the config folder which is located inside the application root and find the config.ini. This file will define the whole configurable behaviour of ManiaLive and its plugins.
+
+Otherwise you might want to take a look into the config folder which is located inside the application root and find the config-example.ini. This file will define the whole configurable behaviour of ManiaLive and its plugins.
+ManiaLive will look for a config.ini by default. So if you install ManiaLive on your system for the first time, you need to copy and rename the example so that ManiaLive is able to find it.<br>
 If you are familiar with programming, you should be able to understand how to make changes very easily, for those who don't, there are only a few types of elements you need to understand:
 
 == Elements ==
+
 To be interpreted correctly, each element has to be put on a single line and may itself not contain any line breaks.
 
 === Comment ===
+
 The easiest of all is probably the comment.
 Beginning with a semicolon at the first character of the line and whatever text afterwards, it is used for making descriptions or formatting.
 
