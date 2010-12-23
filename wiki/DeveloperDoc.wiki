@@ -231,7 +231,7 @@ Should you require the same connection twice the currently established connectio
 
 = Utilities =
 
-In the namespace \ManiaLive\Utilities you will, apart from the Logger, Console,  find a lot of useful tools. This section will explain them.
+There are yet two more classes in the \ManiaLive\Utilities namespace that haven't been mentioned yet. They each are a collection of useful functions that you should know about when using ManiaLive.
 
 == Time ==
 
