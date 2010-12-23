@@ -25,6 +25,10 @@ If you have made some small changes for example the xml-rpc port or the Super Ad
  * --dedicated_cfg=xxx : xxx represents the name of the Dedicated configuration file to use to get the connection data. This file should be present in the Dedicated's config file.
  * --manialive_cfg=xxx : xxx represents the name of the ManiaLive's configuration file. This file should be present in the ManiaLive's config file.
 
+Here is a sample of how to start a ManiaLive instance:
+
+`php.exe bootstrapper.php --dedicated_cfg=dedicated_cfg.txt --manialive_cfg=config.ini`
+
 = Introduction to Configuration =
 Otherwise you might want to take a look into the config folder which is located inside the application root and find the config.ini. This file will define the whole configurable behaviour of ManiaLive and its plugins.
 If you are familiar with programming, you should be able to understand how to make changes very easily, for those who don't, there are only a few types of elements you need to understand:
@@ -125,6 +129,10 @@ This means that you will need to add the path to your php.exe to your system's p
 
 == Linux ==
 On linux it's as easy as that. Just type “sh run” when your current directory is the ManiaLive root.
+Don't forget to create a daemon if you want that your server will still be running once you will be disconnected.
+
+=== None Debian based system ===
+On Debian system the start-stop-daemon command allows you to create easily a new Daemon. The `run` script use this command to create a daemon, so use it with caution if you don't have this command.
 
 = Logging =
 When there's an error, then usually the first thing that you want to do is to check the log-files. But where to find them?
