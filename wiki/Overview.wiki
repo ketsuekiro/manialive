@@ -3,5 +3,5 @@
   * [DeveloperDoc Developer Documentation]
   * Examples
     * [ExamplePlugin Plugin Basics]
-    * [ExampleThread Howto Threading] 
-    * [ExampleWindow Window Creation] 
+    * [ExampleThread Threading] 
+    * [ExampleWindow Window Creation]
