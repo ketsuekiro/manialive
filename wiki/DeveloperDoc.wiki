@@ -235,11 +235,11 @@ There are yet two more classes in the \ManiaLive\Utilities namespace that haven'
 
 == Time ==
 
-You can use the Time class to convert a Trackmania timestamp into a well formatted time string.
+You can use the Time class to convert a Trackmania timestamp into a well formatted string.
 {{{
 Time::fromTM($timestamp, $signed = false)
 }}}
-Setting the second parameter to true
+Setting the second parameter to true will look for a negative value and if so attach a dash to the front of the string.
 
 == String ==
 
@@ -249,7 +249,7 @@ The most important function probably is
 {{{
 String::stripColors($string)
 }}}
-which removes the color fromatting from a player's nickname or a challenge name.
+which removes the color fromatting from a player's nick or a challenge name.
 Take a look in the code documentation for the other methods.
 
 = Windowing System =
