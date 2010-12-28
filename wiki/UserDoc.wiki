@@ -121,7 +121,7 @@ Within your ManiaLive folder there will be two launcher files. One for windows a
 For windows you should be able to launch ManiaLive by simple double-clicking on “run.bat”.
 
 === Troubleshooting ===
-*php.exe is not a known commmand*
+*php.exe is not a known commmand*<br>
 This means that you will need to add the path to your php.exe to your system's path environment varibale.
  # To achieve this, go to Control Panel and open the System icon (Start -> Settings -> Control Panel -> System, or just Start -> Control Panel -> System for Windows XP/2003)	
  # Go to the Advanced tab
@@ -131,7 +131,7 @@ This means that you will need to add the path to your php.exe to your system's p
  # Double click on the Path entry
  # Enter your PHP directory at the end, including ‘;’ before (e.g. ;C:\php)
 
-*It is not safe to rely on the system's timezone settings.[...]*
+*It is not safe to rely on the system's timezone settings.[...]*<br>
 You did not set a timezone in your php.ini file.<br>
 An easy explanation on how to fix this is [http://www.electrictoolbox.com/correct-php-timezone here].
 
