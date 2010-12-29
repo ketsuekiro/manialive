@@ -1,6 +1,6 @@
 #sidebar TableOfContents
-  * [UserDoc User Documentation]
-  * [DeveloperDoc Developer Documentation]
+  * [UserDoc Users Guide]
+  * [DeveloperDoc Developers Guide]
   * [http://api.manialive.com API Documentation]
   * Examples
     * [ExamplePlugin Plugin Basics]
