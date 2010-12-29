@@ -1,6 +1,7 @@
 #sidebar TableOfContents
   * [UserDoc User Documentation]
   * [DeveloperDoc Developer Documentation]
+  * [http://api.manialive.com API Documentation]
   * Examples
     * [ExamplePlugin Plugin Basics]
     * [ExampleThread Threading] 
