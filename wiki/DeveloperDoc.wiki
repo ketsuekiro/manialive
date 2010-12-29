@@ -14,6 +14,11 @@ In the next step we take a closer look onto the libraries folder. It contains th
 
 = General Conventions =
 
+*Please read these conventions carefully before creating a plugin!<br>
+It will save you a lot of work - it might not be possible for you to publish your plugin later if you did not respect the conventions!*
+
+  # [http://en.wikipedia.org/wiki/CamelCase CamelCase] naming for classes.
+  # Methods and properties are [http://en.wikipedia.org/wiki/CamelCase CamelCase] but with lower case first letter.
   # Use namespaces instead of include or require statements!<br>In order for a class to be loaded automatically you need to stick to the following rules.
   # Class names are case sensitive and every word in the name starts with a capital letter.
   # Namespaces are folders in the file-system, so if you create a new class, make sure it is located in the right namespace!
