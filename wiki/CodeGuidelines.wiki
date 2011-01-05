@@ -1,6 +1,8 @@
 #summary Guideline for developers
 #labels Phase-Implementation,Phase-Requirements,Phase-Design
 
+<wiki:toc max_depth="3" />
+
 = Basis =
 
 == Editor Settings ==
