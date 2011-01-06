@@ -2,6 +2,7 @@
   * [UserDoc Users Guide]
   * [DeveloperDoc Developers Guide]
   * [http://api.manialive.com API Documentation]
+  * [CodeGuidelines Code Guidelines]
   * Examples
     * [ExamplePlugin Plugin Basics]
     * [ExampleThread Threading] 
