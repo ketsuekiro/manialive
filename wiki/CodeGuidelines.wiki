@@ -1,5 +1,5 @@
 #summary Guideline for developers
-#labels Phase-Implementation,Phase-Requirements,Phase-Design
+#labels Phase-Implementation,Phase-Requirements,Phase-Design,Featured
 
 <wiki:toc max_depth="3" />
 
