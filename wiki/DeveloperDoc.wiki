@@ -281,10 +281,11 @@ Take a look in the code documentation for the other methods.
 = Windowing System =
 
 Now that you know the basics of ManiaLive, the last thing you need to know is how to make your progress accessible to the big crowds on your server.
-The dedicated server allows us by passing it xml manialinks to draw an interface for specific players.
-ManiaLive brings this to a new level, you don’t have to know all details of formatting manialink pages and rendering them to xml. There are just three components that are used to draw elements onto the screen:
+The dedicated server allows us by passing it xml manialinks to draw an interface for specific players.<br />
+ManiaLive brings this to a new level, you don’t have to know all details of formatting manialink pages and rendering them to xml. There are just three/four types of components that are used to draw elements onto the screen:
   * *Elements* are the smallest units that can be drawn.<br>If you want to compare them with anything, then they are just like files on your disk.
   * *Controls* consist of several elements or once again controls itself.<br>They can be used to group *components* (which is the umbrella term for either elements or controls) and combine them with logic, this way they can result in a versatile and reusable object, that you will be able to share between all your projects.<br>Put into comparison, this would be folders in your hard drive.
+  * *Layouts*, finally, will help you with positioning of elements and controls.<br>You can apply Layouts to any Control and it will take care of the positioning of all it's subcomponents. They probably make most sense in combination with the _Frame_ Control.
   * *Windows* can contain components and additionally can be drawn onto the screen. They also offer helpers for positioning.
 
 == Creating a Window ==
@@ -316,10 +317,10 @@ Executed whenever the window has been hidden and is recovered back to the displa
 
 For each of the existing component types there are already predefined namespaces that contain a set of helpful objects that were created during the use of ManiaLive until now.
 
-=== \ManiaLive\Gui\Toolkit\Elements ===
+=== \ManiaLib\Gui\Elements ===
 
-For a further description of these elements, see the ManiaLib documentation.
-The process of instantiating and using them should be almost the same, except you don’t call the save method, but the addComponent method of the component that you want to draw it on.
+For a further description of these elements, see the ManiaLib documentation.<br>
+The process of instantiating and using them should is almost the same, except you don’t call the save method, but the *addComponent($element_or_control)* method of the component that you want to draw it on.
   * *Audio*
   * *BgRaceScore2*
   * *Bgs1*
@@ -341,6 +342,16 @@ The process of instantiating and using them should be almost the same, except yo
   * *Quad*
   * *Spacer*
   * *Video*
+
+=== \ManiaLib\Gui\Layouts===
+
+Once again, a further description to each of the Layouts you will find at the ManiaLib documentation.<br>
+If you want to use a Layout, then you need to add an object instance to the Control's *applyLayout($layout)* method.
+  * *Column*
+  * *Flow*
+  * *Line*
+  * *Spacer*
+  * *VerticalFlow*
 
 === \ManiaLive\Gui\Windowing\Controls ===
 
