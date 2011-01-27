@@ -163,7 +163,9 @@ Launching ManiaLive with the following arguments:
 }}}
 
 == Troubleshooting ==
-*It is not safe to rely on the system's timezone settings.[...]*<br>
+
+=== It is not safe to rely on the system's timezone settings. ===
+
 You did not set a timezone in your php.ini file.<br>
 An easy explanation on how to fix this is [http://www.electrictoolbox.com/correct-php-timezone here].
 
