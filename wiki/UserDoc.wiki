@@ -32,6 +32,9 @@ Here is a sample of how to start a ManiaLive instance:
 = Introduction to Configuration =
 
 Otherwise you might want to take a look into the config folder which is located inside the application root and find the config-example.ini. This file will define the whole configurable behaviour of ManiaLive and its plugins.<br>
+
+|| http://files.manialive.com/doc/1_rename_config.png ||
+
 ManiaLive will look for a config.ini by default. So if you install ManiaLive on your system for the first time, you need to copy and rename the example so that ManiaLive is able to find it.<br>
 If you are familiar with programming, you should be able to understand how to make changes very easily, for those who don't, there are only a few types of elements you need to understand:
 
@@ -97,6 +100,8 @@ The admins sub-module manages a list of administrators. You can add new admins t
 
 admins.logins[] = login
 
+|| http://files.manialive.com/doc/2_edit_config.png ||
+
 === Plugins ===
 Is a module, that dynamically loads plugins on application startup. Add a new plugin, that you want to load, by adding a line:
 
@@ -104,6 +109,8 @@ plugins.load[] = author\plugin
 
 Each plugin that is loaded needs to be located in the “ManiaLivePlugins” folder and has to have two sub-folders, one named after the author and one after the plugin itself.
 In an author's folder there may be several plugin folders.
+
+|| http://files.manialive.com/doc/3_plugins.png ||
 
 === Threading ===
 This module will, if supported by the plugin, assign blocking or work with heavy calculations to other processes. This way the application's ability to respond is reserved.
@@ -116,28 +123,49 @@ Options supported: maniahome.enabled, maniahome.user, maniahome.password, maniah
 
 = First Launch =
 Within your ManiaLive folder there will be two launcher files. One for windows and one for linux systems.
+<br>
+If your php path is not set in your system environment, then you can set the path to it in the run.ini file (this applies to both, windows and linux)
+
+|| http://files.manialive.com/doc/4_set_php.png ||
+
+This path will be also used for threading, as long as you don't override it in the config.ini file.
 
 == Windows ==
 For windows you should be able to launch ManiaLive by simple double-clicking on “run.bat”.
 
-=== Troubleshooting ===
-*php.exe is not a known commmand*<br>
-This means that you will need to add the path to your php.exe to your system's path environment varibale.
- # To achieve this, go to Control Panel and open the System icon (Start -> Settings -> Control Panel -> System, or just Start -> Control Panel -> System for Windows XP/2003)	
- # Go to the Advanced tab
- # Click on the ‘Environment Variables’ button
- # Look into the ‘System Variables’ pane
- # Find the Path entry (you may need to scroll to find it)
- # Double click on the Path entry
- # Enter your PHP directory at the end, including ‘;’ before (e.g. ;C:\php)
+== Linux ==
+On linux it is almost the same.<br>
+First you need to make the run file executeable.
+{{{
+florian@ubuntu:~$ cd ManiaLive
+florian@ubuntu:~/ManiaLive$ chmod +x run
+florian@ubuntu:~/ManiaLive$
+}}}
+Now you can use the script to start ManiaLive.
+{{{
+florian@ubuntu:~/ManiaLive$ ./run
+Launching ManiaLive Daemon with the following arguments:
+}}}
+If you want to stop ManiaLive again, you can use a command line argument:
+{{{
+florian@ubuntu:~/ManiaLive$ ./run --stop
+Stopping Manialive Daemon ...
+}}}
+Since you won't get any error when you are running ManiaLive as daemon (except you want to check the logs each time) you probably want to run it in the command line until it's stable.<br>
+That can be achieved by another argument:
+{{{
+florian@ubuntu:~/ManiaLive$ ./run --nodaemon
+Launching ManiaLive with the following arguments:
+[19:09:58] XML-RPC connection established
+[19:09:58] Successfully authentified with XML-RPC server
+[19:09:58|Dedimania] Starting authentication on server ...
+[19:09:58|Dedimania] Please wait, opening session ...
+}}}
 
+== Troubleshooting ==
 *It is not safe to rely on the system's timezone settings.[...]*<br>
 You did not set a timezone in your php.ini file.<br>
 An easy explanation on how to fix this is [http://www.electrictoolbox.com/correct-php-timezone here].
-
-== Linux ==
-On linux it's as easy as that. Just type “sh run” when your current directory is the ManiaLive root.
-Don't forget to create a daemon if you want that your server will still be running once you will be disconnected.
 
 === None Debian based system ===
 On Debian system the start-stop-daemon command allows you to create easily a new Daemon. The `run` script use this command to create a daemon, so use it with caution if you don't have this command.
@@ -146,7 +174,3 @@ On Debian system the start-stop-daemon command allows you to create easily a new
 When there's an error, then usually the first thing that you want to do is to check the log-files. But where to find them?
 If you haven't changed the config settings for log-files, then the default place is the “logs” folder in the ManiaLive root. By default it contains the “log_Command.txt” which keeps track of the chat commands that have been used on the server, “log_Error.txt” if there have been errors during execution and “Loader_pid.txt” documenting the load process of the config-file for every instance that has been launched.
 If you have changed logsPath then all logs except the global error log and the loader logs will be created in this path. If you set a prefix then the names will vary.
-
-= History of Changes =
-== Version 1.0 ==
-Initial release, no changes!
