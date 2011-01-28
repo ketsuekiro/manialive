@@ -13,6 +13,59 @@
 
 ,,*only needed if Threading enabled.,,
 
+= Installation =
+
+== Fresh ==
+
+For a fresh installation go to the Downloads page and get the latest ManiaLive package.<br>
+In addition you also might want to download the Standard Plugins package.<br>
+Extract the ManiaLive archive somewhere you have access to.<br>
+To install the plugins, just extract them into the ManiaLive folder that you have just created.
+
+== Upgrade (since r1830) ==
+
+This only applies if you currently have a version > 1830 installed.<br>
+When using ManiaLive it will display priodic messages when there's a new version ready.<br>
+If you want to upgrade to the new version without much effort, it is recommended to use the update script.<br>
+
+=== Windows ===
+
+Just go to the update folder and execute the update.bat
+
+|| http://files.manialive.com/doc/0_update_win.png ||
+
+=== Linux ===
+
+On Linux we weren't able to serve you with a launcher script yet, because it fails possibility to interact with the console.<br>
+You will need to execute the php file by hand:<br>
+{{{
+florian@ubuntu:~/ManiaLive$ cd update
+florian@ubuntu:~/ManiaLive/update$ php update.php
+###############################
+# ManiaLive Updater
+###############################
+
+> Checking local ManiaLive version ...
+> ManiaLive is at version 1830
+> Checking remote ManiaLive version ...
+> Remote ManiaLive is at version 2028
+> Searching ManiaLive release package ...
+> Downloading 'ManiaLive_1.0_r2028.zip' ...
+> OK.
+
+Everything is in place.
+[local: 1830] ---> [remote: 2028]
+Do you want to update ManiaLive now? (y/n):
+}}}
+
+If the command php is unkown, you can also try this to get the path to your php executable:
+{{{
+florian@ubuntu:~/ManiaLive/update$ which php
+/usr/bin/php
+florian@ubuntu:~/ManiaLive/update$ /usr/bin/php update.php
+...
+}}}
+
 = First start =
 To get you started very quickly most configuration is already done. In fact, if you are running a just downloaded Trackmania Dedicated Server and you haven't done any changes apart from setting a server name, you should already be good to go.
 If you have made some small changes for example the xml-rpc port or the Super Admin Password you can use the command line configuration. Here are the parameters you can add in the launch script
@@ -170,7 +223,8 @@ You did not set a timezone in your php.ini file.<br>
 An easy explanation on how to fix this is [http://www.electrictoolbox.com/correct-php-timezone here].
 
 === None Debian based system ===
-On Debian system the start-stop-daemon command allows you to create easily a new Daemon. The `run` script use this command to create a daemon, so use it with caution if you don't have this command.
+On Debian system the start-stop-daemon command allows you to create easily a new Daemon. The `run` script use this command to create a daemon, so use it with caution if you don't have this command.<br>
+This issue has been discussed on the forum already: http://forum.maniaplanet.com/viewtopic.php?f=46&t=647#p9771
 
 = Logging =
 When there's an error, then usually the first thing that you want to do is to check the log-files. But where to find them?
