@@ -5,7 +5,7 @@
 
 = Requirements =
 
-  * Php at minimum version *5.3*	
+  * Php at minimum version *5.3*<br>with cURL extension enabled (since r194)
   * Windows or Linux System.
   * Trackmania Dedicated Server
   * Php SQLite Extension`*`
