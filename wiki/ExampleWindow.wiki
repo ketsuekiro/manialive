@@ -67,15 +67,14 @@ use ManiaLive\Gui\Windowing\Controls\Panel;
 
 // here the actual creation process starts.
 // important: don’t forget to inherit the Window class.
-class SimpleWindow extends \ManiaLive\Gui\Windowing\Window
+// in this case we are extending the ManagedWindow, this will
+// automatically put the window background and a cross to close it.
+class SimpleWindow extends \ManiaLive\Gui\Windowing\ManagedWindow
 {
 	// protected properties for every component that you add to your window.
 	// note: you can set public here to be able to access them from outside
 	// the class. it’s faster, but architecture doesn’t like it ...
-	protected $title;
 	protected $text;
-	protected $panel;
-	protected $button;
 
 	// the described initializeComponents method. Called on the first time
 	// the window is used.
@@ -85,44 +84,21 @@ class SimpleWindow extends \ManiaLive\Gui\Windowing\Window
 	{
 		// set a default size for the window.
 		$this->setSize(40, 30);
-		 
-		// creating the panel which serves, as described,
-		// as the window’s background
-		$this->panel = new Panel();
-		$this->addComponent($this->panel);
 
 		// add a text to the window, we don’t define size and
 		// position yet.
 		$this->text = new Label();
 		$this->text->enableAutonewline();
 		$this->addComponent($this->text);
-
-		// create the close button.
-		$this->button = new Icons64x64_1(3);
-		$this->button->setSubStyle(Icons64x64_1::Close);
-		// this is a very cool feature of the Window class.
-		// use the callback method to create an action number that is
-		// associated with a method of the current class.
-		// once this button gets pressed the hide method will be executed!
-		$this->button->setAction($this->callback('hide'));
-		$this->addComponent($this->button);
 	}
 
 	// we haven’t got stuff to do when the window is being closed.
 	protected function onHide() {}
 
-	// this is executed every time the window is drawn onto the screen.
-	// we will position and draw all elements here.
-	protected function onShow()
+	// when the size of the window is changed we will also need to
+        // resize all its components.
+	protected function onResize()
 	{
-		// move the close button 5 to the left of the right border.
-		// move it 1.6 units downwards.
-		// this will result in the right top corner.
-		$this->button->setPosition($this->sizeX - 5, 1.6);
-
-		// stretch panel background to fill window size ...
-		$this->panel->setSize($this->sizeX, $this->sizeY);
-
 		// position and resize text ...
 		$this->text->setPosition(2, 6);
 		$this->text->setSize($this->sizeX - 4, $this->sizeY - 6);
@@ -132,12 +108,6 @@ class SimpleWindow extends \ManiaLive\Gui\Windowing\Window
 	function setText($text)
 	{
 		$this->text->setText($text);
-	}
-
-	// same for the title.
-	function setTitle($title)
-	{
-		$this->panel->setTitle($title);
 	}
 }
 ?>
