@@ -220,11 +220,11 @@ Launching ManiaLive with the following arguments:
 === It is not safe to rely on the system's timezone settings. ===
 
 You did not set a timezone in your php.ini file.<br>
-An easy explanation on how to fix this is [http://www.electrictoolbox.com/correct-php-timezone here].
+An easy explanation on how to fix this is [http://blog.randell.ph/2010/04/15/warning-date-it-is-not-safe-to-rely-on-the-systems-timezone-settings/ here].
 
 === Fatal error: Exception thrown without stack frame in Unknown on line 0 ===
 
-This exception has the same reason as the one above, check out [http://www.electrictoolbox.com/correct-php-timezone the mentioned link] to fix it.
+This exception has the same reason as the one above, check out [http://blog.randell.ph/2010/04/15/warning-date-it-is-not-safe-to-rely-on-the-systems-timezone-settings/ the mentioned link] to fix it.
 
 = Logging =
 When there's an error, then usually the first thing that you want to do is to check the log-files. But where to find them?
