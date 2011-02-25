@@ -222,9 +222,9 @@ Launching ManiaLive with the following arguments:
 You did not set a timezone in your php.ini file.<br>
 An easy explanation on how to fix this is [http://www.electrictoolbox.com/correct-php-timezone here].
 
-=== None Debian based system ===
-On Debian system the start-stop-daemon command allows you to create easily a new Daemon. The `run` script use this command to create a daemon, so use it with caution if you don't have this command.<br>
-This issue has been discussed on the forum already: http://forum.maniaplanet.com/viewtopic.php?f=46&t=647#p9771
+=== Fatal error: Exception thrown without stack frame in Unknown on line 0 ===
+
+This exception has the same reason as the one above, check out [http://www.electrictoolbox.com/correct-php-timezone the mentioned link] to fix it.
 
 = Logging =
 When there's an error, then usually the first thing that you want to do is to check the log-files. But where to find them?
