@@ -110,8 +110,7 @@ Initial release, no changes!
   * add LAN mod to disable updater
   * use login instead of playerId for method ignore and blacklist
   * change help display behaviour
-  * change register chatCommand behaviour, is command parameter is null, command is automatically registered from the number of required parameters to the number
-of optional parameters
+  * change register chatCommand behaviour, is command parameter is null, command is automatically registered from the number of required parameters to the number of optional parameters
   * update ManiaLib version included in ManiaLive
 
 == ManiaLive 1.0 - r214 (5 may 2011) ==
