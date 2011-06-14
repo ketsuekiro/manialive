@@ -122,8 +122,7 @@ of optional parameters
   * fix bugs in storage engine in lap mod
   * change manialib revision used to revision 493
   * Remove package Filter in ManiaLive/Utilities, duplicate code with ManiaLib/Filters (it may represent a compatibility break with some plugins)
-  * Refactor Singleton class ManiaLive\Utilities\Singleton is now deprecated
-  use ManiaLib\Utils\Singleton instead
+  * Refactor Singleton class ManiaLive\Utilities\Singleton is now deprecated use ManiaLib\Utils\Singleton instead
 
 == ManiaLive 1.0 - r223 (31 may 2011) ==
   * improve utf-8 support in TM String stripping
