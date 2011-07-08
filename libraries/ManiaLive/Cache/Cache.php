@@ -4,9 +4,9 @@
  * 
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
- * @version     $Revision: 2624 $:
- * @author      $Author: florian $:
- * @date        $Date: 2011-02-24 15:55:27 +0100 (jeu., 24 févr. 2011) $:
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
  */
 
 namespace ManiaLive\Cache;
