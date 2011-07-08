@@ -476,7 +476,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     function onPlayerFinish($playerUid, $login, $timeOrScore)
     {
-	   if(!isset($this->players[$login]))
+	   if(!isset($this->players[$login]) || count($this->checkpoints[$login]) != $this->currentChallenge->nbCheckpoints)
 	   {
 		  return;
 	   }

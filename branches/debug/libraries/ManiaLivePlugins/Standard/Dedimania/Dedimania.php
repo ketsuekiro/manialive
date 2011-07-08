@@ -40,24 +40,21 @@ use ManiaLive\Threading\ThreadPool;
 use ManiaLive\DedicatedApi\Xmlrpc\Message;
 
 class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
-	\ManiaLive\Data\Listener,
-	\ManiaLive\Features\Tick\Listener,
-	\ManiaLive\Threading\Listener
+\ManiaLive\Data\Listener, \ManiaLive\Features\Tick\Listener, \ManiaLive\Threading\Listener
 {
-	protected $storage;
-	protected $last_players_update;
 
+	protected $last_players_update;
 	protected $packmask;
 	protected $version_info;
 	protected $version;
-
 	protected $records_max;
 	protected $records;
 	protected $records_last;
 	protected $records_new;
 	protected $records_by_login;
 	protected $records_count;
-
+	protected $cheaters;
+	protected $checkpoints;
 	/**
 	 * @var \ManiaLivePlugins\Standard\Dedimania\Structures\Challenge
 	 */
@@ -66,10 +63,8 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 * @var \ManiaLivePlugins\Standard\Dedimania\Structures\Challenge
 	 */
 	protected $challenge_current;
-
 	protected $ready;
 	protected $callback_queue;
-
 	/**
 	 * Configuration
 	 * @var string
@@ -114,13 +109,12 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$this->records_new = array();
 		$this->records_by_login = array();
 		$this->callback_queue = array();
-
-		// get storage reference ...
-		$this->storage = Storage::getInstance();
+		$this->cheaters = array();
+		$this->checkpoints = array();
 
 		// gather some information ...
-		$this->packmask = Connection::getInstance()->getServerPackMask();
-		$this->version_info = Connection::getInstance()->getVersion();
+		$this->packmask = $this->connection->getServerPackMask();
+		$this->version_info = $this->connection->getVersion();
 		$this->version = Utilities::parseGame($this->version_info->name);
 
 		$this->enableThreadingEvents();
@@ -140,7 +134,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$cmd->help = 'displays window with dedimania rankings for the current challenge.';
 
 		// check if password has been set in the config file
-		if (self::$password == null)
+		if(self::$password == null)
 		{
 			throw new ConfigurationException('You need to set the Standard\Dedimania.password option in the config.ini!');
 		}
@@ -156,19 +150,15 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	protected function buildMenu()
 	{
-		if ($this->isPluginLoaded('Standard\Menubar', 1.1))
+		if($this->isPluginLoaded('Standard\Menubar', 1.1))
 		{
 			// set menu icon for dedimanias menu ...
-			$this->callPublicMethod('Standard\Menubar',
-				'initMenu',
+			$this->callPublicMethod('Standard\Menubar', 'initMenu',
 				Icons128x128_1::Replay);
 
 			// add button for records window ...
-			$this->callPublicMethod('Standard\Menubar',
-				'addButton',
-				'Show Records',
-				array($this, 'showRecordWindow'),
-				false);
+			$this->callPublicMethod('Standard\Menubar', 'addButton', 'Show Records',
+				array($this, 'showRecordWindow'), false);
 		}
 	}
 
@@ -178,7 +168,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	function onPluginLoaded($pluginId)
 	{
-		if ($pluginId == 'Standard\Menubar')
+		if($pluginId == 'Standard\Menubar')
 		{
 			$this->buildMenu();
 		}
@@ -191,7 +181,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function onThreadRestart($thread)
 	{
-		if ($thread->getId() == $this->getThreadId())
+		if($thread->getId() == $this->getThreadId())
 		{
 			// begin connection to dedimania ...
 			$this->connectToDedimania();
@@ -213,7 +203,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 
 		// try to open session at auth server ...
 		$params = array
-		(
+			(
 			'Game' => $this->version,
 			'Login' => $this->storage->serverLogin,
 			'Password' => self::$password,
@@ -223,7 +213,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 			'Tool' => 'ManiaLive',
 			'Version' => \ManiaLiveApplication\Version
 		);
-		$call->addRequest(new Request('dedimania.Authenticate', array((object)$params)));
+		$call->addRequest(new Request('dedimania.Authenticate', array((object) $params)));
 
 		// validate account to be sure ...
 		$call->addRequest(new Request('dedimania.ValidateAccount', array()));
@@ -241,10 +231,10 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function showRecordWindow($login, $info = null)
 	{
-		if ($info && $info->isShown())
+		if($info && $info->isShown())
 			$info->hide();
 
-		if (!$this->isReady())
+		if(!$this->isReady())
 		{
 			// show info message ...
 			$info = Info::Create($login);
@@ -274,10 +264,10 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 
 		// refresh records for this window ...
 		$window->clearRecords();
-		foreach ($this->records as $record)
+		foreach($this->records as $record)
 		{
 			$entry = array
-			(
+				(
 				'Rank' => $record->rank,
 				'Login' => $record->login,
 				'NickName' => $record->nickName,
@@ -303,14 +293,14 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		// okay process got server's response!
 		$this->writeConsole('Done!');
 
-		if ($command->result[0]['OK'])
+		if($command->result[0]['OK'])
 		{
-			$this->writeConsole('Connected to Dedimania Version ' . $command->result[0]['Version'] . '!');
+			$this->writeConsole('Connected to Dedimania Version '.$command->result[0]['Version'].'!');
 			$this->records_max = $command->result[0]['MaxRecords'];
 		}
 
 		// we check the authentication query for success ..
-		if ($command->result[1]['OK'])
+		if($command->result[1]['OK'])
 		{
 			$this->writeConsole('Successfully authenticated!');
 		}
@@ -320,20 +310,20 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		}
 
 		// we check the authentication query for success ..
-		if ($command->result[2]['OK'])
+		if($command->result[2]['OK'])
 		{
 			$this->writeConsole('Account is valid!');
 		}
 		else
 		{
-			if ($command->result[2]['Error'])
+			if($command->result[2]['Error'])
 			{
 				$this->writeConsole($command->result[2]['Error']['Message']);
 			}
 			$err = true;
 		}
 
-		if ($err)
+		if($err)
 		{
 			die("Error: Could not connect to Dedimania, authentication failed!\n");
 		}
@@ -348,15 +338,15 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function onTick()
 	{
-		if (time() > $this->last_players_update)
+		if(time() > $this->last_players_update)
 		{
 			$call = new DedimaniaCall();
 
 			$params = array(
 				$this->version,
 				$this->storage->gameInfos->gameMode,
-				(object)$this->getServerInfoArray(),
-				(object)$this->getPlayersArray()
+				(object) $this->getServerInfoArray(),
+				(object) $this->getPlayersArray()
 			);
 
 			$call->addRequest(new Request('dedimania.UpdateServerPlayers', $params));
@@ -374,7 +364,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function cbTick($command)
 	{
-		if ($command->result[0]['OK'])
+		if($command->result[0]['OK'])
 		{
 			$this->writeConsole('Successfully sent keep-alive to server!');
 		}
@@ -395,7 +385,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$call = new DedimaniaCall();
 
 		$params = array
-		(
+			(
 			$this->version,
 			$player->login,
 			$player->nickName,
@@ -409,6 +399,8 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$call->addRequest(new Request('dedimania.PlayerArrive', $params));
 
 		$this->sendWorkToOwnThread($call, 'cbPlayerConnect');
+
+		$this->checkpoints[$login] = array();
 	}
 
 	/**
@@ -418,9 +410,9 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function cbPlayerConnect($command)
 	{
-		if ($command->result[0]['OK'])
+		if($command->result[0]['OK'])
 		{
-			$this->writeConsole('Player ' . $command->result[0]['Login'] . ' has been marked online!');
+			$this->writeConsole('Player '.$command->result[0]['Login'].' has been marked online!');
 		}
 	}
 
@@ -433,7 +425,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$call = new DedimaniaCall();
 
 		$params = array
-		(
+			(
 			$this->version,
 			$login
 		);
@@ -441,6 +433,12 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$call->addRequest(new Request('dedimania.PlayerLeave', $params));
 
 		$this->sendWorkToOwnThread($call, 'cbPlayerDisconnect');
+
+		unset($this->checkpoints[$login]);
+		if(array_key_exists($login, $this->cheaters))
+		{
+			unset($this->cheater[$login]);
+		}
 	}
 
 	/**
@@ -450,9 +448,9 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function cbPlayerDisconnect($command)
 	{
-		if ($command->result[0]['OK'])
+		if($command->result[0]['OK'])
 		{
-			$this->writeConsole('Player ' . $command->result[0]['Login'] . ' has been marked offline!');
+			$this->writeConsole('Player '.$command->result[0]['Login'].' has been marked offline!');
 		}
 	}
 
@@ -468,9 +466,9 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$this->records_new = null;
 		$this->setBusy();
 
-		if ($challenge == null)
+		if($challenge == null)
 			return;
-		elseif (is_array($challenge))
+		elseif(is_array($challenge))
 			$challenge = \ManiaLive\DedicatedApi\Structures\Challenge::fromArray($challenge);
 
 		$this->last_players_update = time() + self::$idleTimeout;
@@ -478,14 +476,14 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$call = new DedimaniaCall();
 
 		$params = array
-		(
+			(
 			$challenge->uId,
 			$challenge->name,
 			$challenge->environnement,
 			$challenge->author,
 			$this->version,
 			$this->storage->gameInfos->gameMode,
-			(object)$this->getServerInfoArray(),
+			(object) $this->getServerInfoArray(),
 			$this->records_max,
 			$this->getPlayersArray()
 		);
@@ -501,7 +499,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function onBeginChallenge($challenge, $warmUp, $matchContinuation)
 	{
-
+		
 	}
 
 	/**
@@ -511,14 +509,14 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function cbBeginChallenge($command)
 	{
-		if (!$command->result[0]['OK'])
+		if(!$command->result[0]['OK'])
 			return;
 
 		// parse challenge object from response ...
 		$challenge = Challenge::fromArray($command->result[0]);
 
 		// destroy old challenge and free records
-		if ($this->challenge_previous != null)
+		if($this->challenge_previous != null)
 		{
 			$this->challenge_previous->destroy();
 		}
@@ -531,7 +529,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 
 		// records organized by logins ...
 		$this->records_by_login = array();
-		foreach ($this->records as $record)
+		foreach($this->records as $record)
 		{
 			$this->records_by_login[$record->login] = $record;
 		}
@@ -540,8 +538,8 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$this->records_count = count($challenge->records);
 
 		// set link to the last record on the leaderboard ...
-		if ($this->records_count > 0)
-			$this->records_last = $challenge->records[count($challenge->records)-1];
+		if($this->records_count > 0)
+			$this->records_last = $challenge->records[count($challenge->records) - 1];
 		else
 			$this->records_last = null;
 
@@ -552,7 +550,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$this->setReady();
 
 		// loaded records for that track!
-		$this->writeConsole('Got records for: ' . $challenge->uid);
+		$this->writeConsole('Got records for: '.$challenge->uid);
 	}
 
 	/**
@@ -562,14 +560,14 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	public function onEndRace($rankings, $challenge)
 	{
 		// this is not allowed
-		if ($this->storage->gameInfos->roundsForcedLaps != 0)
+		if($this->storage->gameInfos->roundsForcedLaps != 0)
 		{
 			Console::println('Dedimania does not accept records driven with RoundsForcedLaps unequal to 0');
 			return;
 		}
 
 		// check if there are any records to send
-		if (!is_array($this->records_new) || empty($this->records_new))
+		if(!is_array($this->records_new) || empty($this->records_new))
 		{
 			return;
 		}
@@ -578,10 +576,10 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 
 		// build times array
 		$times = array();
-		foreach ($this->records_new as $record)
+		foreach($this->records_new as $record)
 		{
 			$times[] = array
-			(
+				(
 				'Login' => $record->login,
 				'Best' => $record->best,
 				'Checks' => $record->checks
@@ -590,7 +588,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 
 		// Uid, Name, Environment, Author, Game, Mode, NumberOfChecks, MaxGetTimes, Times
 		$params = array
-		(
+			(
 			$this->storage->currentChallenge->uId,
 			$this->storage->currentChallenge->name,
 			$this->storage->currentChallenge->environnement,
@@ -614,21 +612,22 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function cbEndRace($command)
 	{
-		if (!$command->result[0]['OK'])
+		if(!$command->result[0]['OK'])
 			return;
 
 		$challenge = Challenge::fromArray($command->result[0]);
 
-		$this->writeConsole('Inserted records for: ' . $challenge->uid);
+		$this->writeConsole('Inserted records for: '.$challenge->uid);
 	}
 
 	/**
 	 * (non-PHPdoc)
 	 * @see libraries/ManiaLive/DedicatedApi/Callback/ManiaLive\DedicatedApi\Callback.Adapter::onEndChallenge()
 	 */
-	public function onEndChallenge($rankings, $challenge, $wasWarmUp, $matchContinuesOnNextChallenge, $restartChallenge)
+	public function onEndChallenge($rankings, $challenge, $wasWarmUp,
+		$matchContinuesOnNextChallenge, $restartChallenge)
 	{
-		foreach ($this->storage->players as $login => $player)
+		foreach($this->storage->players as $login => $player)
 		{
 			$cpwin = CheckpointTime::Create($login);
 			$cpwin->hide();
@@ -639,9 +638,27 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 * (non-PHPdoc)
 	 * @see libraries/ManiaLive/DedicatedApi/Callback/ManiaLive\DedicatedApi\Callback.Adapter::onPlayerCheckpoint()
 	 */
-	public function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex)
+	public function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap,
+		$checkpointIndex)
 	{
-		if ($this->storage->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
+		if($timeOrScore < 0)
+		{
+			$this->cheaters[$login] = 1;
+			return;
+		}
+
+		foreach($this->checkpoints[$login] as $checkpoint)
+		{
+			if($timeOrScore < $checkpoint)
+			{
+				$this->cheaters[$login] = 1;
+				return;
+			}
+		}
+		
+		$this->checkpoints[$login][$checkpointIndex] = $timeOrScore;
+
+		if($this->storage->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
 		{
 			$player = new Player;
 			$player->login = $login;
@@ -649,7 +666,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 			$timeOrScore = end($checks);
 			$checkpointIndex = key($checks);
 
-			if ((($checkpointIndex + 1) % $this->storage->currentChallenge->nbCheckpoints) == 0)
+			if((($checkpointIndex + 1) % $this->storage->currentChallenge->nbCheckpoints) == 0)
 			{
 				return;
 			}
@@ -665,16 +682,17 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 * @param unknown_type $timeOrScore
 	 * @param unknown_type $checkpointIndex
 	 */
-	protected function displayCheckpointWidget($login, $timeOrScore, $checkpointIndex)
+	protected function displayCheckpointWidget($login, $timeOrScore,
+		$checkpointIndex)
 	{
-		if ($this->records_last != null)
+		if($this->records_last != null)
 		{
 			// look for the record that we are comparing to
 			$compare = $this->records_last;
-			if (isset($this->records_by_login[$login]))
+			if(isset($this->records_by_login[$login]))
 			{
 				// player is ranked as first, so we can only compare to his own time
-				if ($this->records_by_login[$login]->rank == 1)
+				if($this->records_by_login[$login]->rank == 1)
 					$compare = $this->records_by_login[$login];
 
 				// if ranked at least second, we can compare his time to a better one
@@ -683,7 +701,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 			}
 
 			// check whether there is a time for the current checkpoint
-			if (isset($compare->checks[$checkpointIndex]))
+			if(isset($compare->checks[$checkpointIndex]))
 			{
 				// calculate the difference
 				$cp_best = $compare->checks[$checkpointIndex];
@@ -692,7 +710,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 				// and display the window
 				$cpwin = CheckpointTime::Create($login);
 
-				if ($checkpointIndex == 0)
+				if($checkpointIndex == 0)
 					$cpwin->clearTimes();
 
 				$cpwin->setPosition(0, 43);
@@ -709,11 +727,17 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function onPlayerFinish($playerUid, $login, $timeOrScore)
 	{
-		if ($timeOrScore == 0 && $login != $this->storage->serverLogin)
+		if($timeOrScore == 0 && $login != $this->storage->serverLogin)
 		{
 			$cpwin = CheckpointTime::Create($login);
 			$cpwin->clearTimes();
 			$cpwin->show();
+		}
+		
+		$this->checkpoints[$login] = array();
+		if(array_key_exists($login, $this->cheaters))
+		{
+			unset($this->cheater[$login]);
 		}
 	}
 
@@ -723,7 +747,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function onBeginRound()
 	{
-		foreach ($this->storage->players as $login => $player)
+		foreach($this->storage->players as $login => $player)
 		{
 			$cpwin = CheckpointTime::Create($login);
 			$cpwin->clearTimes();
@@ -738,12 +762,12 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	public function onPlayerFinishLap($player, $timeOrScore, $checkpoints, $nbLap)
 	{
 		// only in laps mode!
-		if ($this->storage->gameInfos->gameMode != GameInfos::GAMEMODE_LAPS)
+		if($this->storage->gameInfos->gameMode != GameInfos::GAMEMODE_LAPS)
 		{
 			return;
 		}
 
-		Console::printDebug($player->login . ' finished lap #' . $nbLap . '!');
+		Console::printDebug($player->login.' finished lap #'.$nbLap.'!');
 
 		// create record object ...
 		$record = new Record();
@@ -754,7 +778,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$record->challenge = $this->challenge_current;
 
 		// display widget
-		if ($this->storage->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
+		if($this->storage->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
 		{
 			$checks = $this->storage->getLapCheckpoints($player);
 			$timeOrScore = end($checks);
@@ -773,11 +797,16 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	 */
 	public function onPlayerNewBestTime($player, $best_old, $best_new)
 	{
-		Console::printDebug($player->login . ' drove new best!');
+		if(array_key_exists($player->login, $this->cheaters))
+		{
+			return;
+		}
+		
+		Console::printDebug($player->login.' drove new best!');
 
 		// stunts is currently not implemented
 		// and laps is implemented in onplayerfinishlap
-		if ($this->storage->gameInfos->gameMode == GameInfos::GAMEMODE_STUNTS
+		if($this->storage->gameInfos->gameMode == GameInfos::GAMEMODE_STUNTS
 			|| $this->storage->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
 		{
 			return;
@@ -785,7 +814,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 
 		// if first record is driven during load, then insert into queue and
 		// process later as soon as ready!
-		if (!$this->isReady())
+		if(!$this->isReady())
 		{
 			$callback = array($this, 'onPlayerNewBestTime');
 			$this->registerWaitForReady($callback, $player, $best_old, $best_new);
@@ -812,7 +841,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	protected function insertRecord($player, $record)
 	{
 		// validate record
-		if (!$record->validate())
+		if(!$record->validate())
 		{
 			return;
 		}
@@ -820,12 +849,12 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		// is this relevant for best times:
 		// either the player's time is at least better than the last record or there are no more
 		// than 30 records yet.
-		if ($this->records_last == null
+		if($this->records_last == null
 			|| $player->bestTime < $this->records_last->best
 			|| $this->records_count < self::RECORDS_MAX)
 		{
 			// this is the first record of this player ...
-			if (!array_key_exists($record->login, $this->records_by_login))
+			if(!array_key_exists($record->login, $this->records_by_login))
 			{
 				// insert new record to the end of the list ...
 				$record->rank = $this->records_count + 1;
@@ -836,10 +865,10 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 				$this->records_by_login[$record->login] = $record;
 
 				// shift the record up until it is on the right position ...
-				for ($i = $this->records_count - 1; $i > 0; $i--)
+				for($i = $this->records_count - 1; $i > 0; $i--)
 				{
-					if ($this->records[$i]->best < $this->records[$i-1]->best)
-						$this->swapRecords($i, $i-1);
+					if($this->records[$i]->best < $this->records[$i - 1]->best)
+						$this->swapRecords($i, $i - 1);
 					else
 						break;
 				}
@@ -848,9 +877,9 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 				$this->records_new[] = $record;
 
 				// send notification to all players
-				if (self::$notifications)
+				if(self::$notifications)
 				{
-					if ($record->rank == 1)
+					if($record->rank == 1)
 					{
 						$msg = $this->prepareMessage($record, self::$notifyNewFirstRecord);
 						$this->connection->chatSendServerMessage($msg);
@@ -862,21 +891,22 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 					}
 				}
 
-				$this->writeConsole($record->login . ' drove a new ' . $record->rank . '. record!');
+				$this->writeConsole($record->login.' drove a new '.$record->rank.'. record!');
 			}
 
 			// this player has a record already!
 			else
 			{
 				// this time is worse than player's current record ...
-				if ($this->records_by_login[$record->login]->best <= $record->best) return;
+				if($this->records_by_login[$record->login]->best <= $record->best)
+					return;
 
 				// search for the old record in the leaderboard ...
 				$old_rank = 0;
-				for ($i = $this->records_count - 1; $i >= 0; $i--)
+				for($i = $this->records_count - 1; $i >= 0; $i--)
 				{
 					// if we found the old record, then update it
-					if ($this->records[$i]->login == $record->login)
+					if($this->records[$i]->login == $record->login)
 					{
 						$this->records[$i]->best = $record->best;
 						$this->records[$i]->checks = $record->checks;
@@ -884,10 +914,10 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 						$old_rank = $i;
 
 						// move record forward ...
-						for ($n = $i; $n > 0; $n--)
+						for($n = $i; $n > 0; $n--)
 						{
-							if ($this->records[$n]->best < $this->records[$n-1]->best)
-								$this->swapRecords($n, $n-1);
+							if($this->records[$n]->best < $this->records[$n - 1]->best)
+								$this->swapRecords($n, $n - 1);
 							else
 								break;
 						}
@@ -896,11 +926,11 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 				}
 
 				// send notification to all players
-				if (self::$notifications)
+				if(self::$notifications)
 				{
-					if ($record->rank == 1)
+					if($record->rank == 1)
 					{
-						if ($old_rank == 0)
+						if($old_rank == 0)
 						{
 							$msg = $this->prepareMessage($record, self::$notifyImprovedFirstRecord);
 							$this->connection->chatSendServerMessage($msg);
@@ -913,7 +943,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 					}
 					else
 					{
-						if ($record->rank != ($old_rank+1))
+						if($record->rank != ($old_rank + 1))
 						{
 							$msg = $this->prepareMessage($record, self::$notifyImprovedRecord);
 							$this->connection->chatSendServerMessage($msg);
@@ -928,14 +958,14 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 
 				// player improved his record ...
 				$this->records_new[] = $record;
-				$this->writeConsole($record->login.' improved to ' . $record->rank . '. rank and was ' . ($old_rank+1) . '. before!');
+				$this->writeConsole($record->login.' improved to '.$record->rank.'. rank and was '.($old_rank + 1).'. before!');
 			}
 
 			// remove all records that are redundant
-			while ($this->records_count > self::RECORDS_MAX)
+			while($this->records_count > self::RECORDS_MAX)
 			{
 				$record = array_pop($this->records);
-				if (isset($this->records_by_login[$record->login]))
+				if(isset($this->records_by_login[$record->login]))
 				{
 					unset($this->records_by_login[$record->login]);
 					$this->records_count--;
@@ -948,14 +978,14 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 
 			// update window information
 			$wins = Leaderboard::GetAll();
-			foreach ($wins as $window)
+			foreach($wins as $window)
 			{
 				// refresh records for this window ...
 				$window->clearRecords();
-				foreach ($this->records as $record)
+				foreach($this->records as $record)
 				{
 					$entry = array
-					(
+						(
 						'Rank' => $record->rank,
 						'Login' => $record->login,
 						'NickName' => $record->nickName,
@@ -977,7 +1007,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 			$notification .= String::stripWideFonts($this->storage->currentChallenge->name);
 
 			// send notifications on maniahome ...
-			$runnable = new NotificationCall($notification, $record->login, 'tmtp://#join=' . $this->storage->serverLogin, 'BgRaceScore2', 'ScoreLink');
+			$runnable = new NotificationCall($notification, $record->login, 'tmtp://#join='.$this->storage->serverLogin, 'BgRaceScore2', 'ScoreLink');
 			ThreadPool::getInstance()->addCommand(new RunCommand($runnable));
 		}
 	}
@@ -1016,8 +1046,8 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$temp = $this->records[$n];
 		$this->records[$n] = $this->records[$i];
 		$this->records[$i] = $temp;
-		$this->records[$i]->rank = $i+1;
-		$this->records[$n]->rank = $n+1;
+		$this->records[$i]->rank = $i + 1;
+		$this->records[$n]->rank = $n + 1;
 	}
 
 	/**
@@ -1029,10 +1059,10 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$players = array();
 
 		// parse players ...
-		foreach ($this->storage->players as $player)
+		foreach($this->storage->players as $player)
 		{
 			$players[] = array
-			(
+				(
 				'Login' => $player->login,
 				'Nation' => $player->path,
 				'TeamId' => $player->teamId,
@@ -1043,10 +1073,10 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		}
 
 		// parse spectators ...
-		foreach ($this->storage->spectators as $player)
+		foreach($this->storage->spectators as $player)
 		{
 			$players[] = array
-			(
+				(
 				'Login' => $player->login,
 				'Nation' => $player->path,
 				'TeamId' => $player->teamId,
@@ -1067,7 +1097,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$sysinfo = $this->connection->getSystemInfo();
 
 		return array
-		(
+			(
 			'SrvName' => $this->storage->server->name,
 			'Comment' => $this->storage->server->comment,
 			'Private' => isset($this->server->password),
@@ -1092,7 +1122,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 		$callback = array_shift($args);
 
 		$this->callback_queue[] = array
-		(
+			(
 			'callback' => $callback,
 			'params' => $args
 		);
@@ -1123,9 +1153,9 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	{
 		$this->ready = true;
 
-		while ($entry = array_shift($this->callback_queue))
+		while($entry = array_shift($this->callback_queue))
 		{
-			if (is_callable($entry['callback']))
+			if(is_callable($entry['callback']))
 			{
 				call_user_func_array($entry['callback'], $entry['params']);
 			}
@@ -1139,17 +1169,48 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 	}
 
 	// threading listener
-	function onThreadStart($thread) {}
-	function onThreadDies($thread) {}
-	function onThreadTimesOut($thread) {}
+	function onThreadStart($thread)
+	{
+		
+	}
+
+	function onThreadDies($thread)
+	{
+		
+	}
+
+	function onThreadTimesOut($thread)
+	{
+		
+	}
 
 	// dedimania listener
-	function onPlayerNewRank($player, $rank_old, $rank_new) {}
-	function onPlayerNewBestScore($player, $score_old, $score_new) {}
+	function onPlayerNewRank($player, $rank_old, $rank_new)
+	{
+		
+	}
+
+	function onPlayerNewBestScore($player, $score_old, $score_new)
+	{
+		
+	}
+
 }
 
 // exception classes
-class Exception extends \Exception {}
-class ConfigurationException extends Exception {}
-class NotConnectedException extends Exception {}
+class Exception extends \Exception
+{
+	
+}
+
+class ConfigurationException extends Exception
+{
+	
+}
+
+class NotConnectedException extends Exception
+{
+	
+}
+
 ?>
