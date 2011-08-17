@@ -248,16 +248,16 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * and who is voting. Special timeout values: a timeout of '0' means default, '1' means
 	 * indefinite; a ratio of '-1' means default; Voters values: '0' means only active players,
 	 * '1' means any player, '2' is for everybody, pure spectators included.
-	 * @param Player $player
+	 * @param Player|string $player Player or string
 	 * @param double $ratio -1 means default, else ration should be between 0 and 1
 	 * @param int $timeout time to vote in millisecondes, '0' means default
 	 * @param int $voters Voters values: '0' means only active players, '1' means any player, '2' is for everybody, pure spectators included
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteKick(Player $player, $ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteKick($player, $ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -274,7 +274,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('voters = '.print_r($voters,true));
 		}
 
-		$tmpCmd = new Xmlrpc\Request('Kick', array($player->login));
+		$tmpCmd = new Xmlrpc\Request('Kick', array($login));
 
 		return $this->execute('CallVoteEx', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
@@ -285,7 +285,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * and who is voting. Special timeout values: a timeout of '0' means default, '1' means
 	 * indefinite; a ratio of '-1' means default; Voters values: '0' means only active players,
 	 * '1' means any player, '2' is for everybody, pure spectators included.
-	 * @param string $player
+	 * @param mixed $player
 	 * @param double $ratio -1 means default, else ration should be between 0 and 1
 	 * @param int $timeout time to vote in millisecondes, '0' means default
 	 * @param int $voters Voters values: '0' means only active players, '1' means any player, '2' is for everybody, pure spectators included
@@ -294,7 +294,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function callVoteBan(Player $player, $ratio = 0.6, $timeout = 0, $voters = 1, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -311,7 +311,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('voters = '.print_r($voters,true));
 		}
 
-		$tmpCmd = new Xmlrpc\Request('Ban', array($player->login));
+		$tmpCmd = new Xmlrpc\Request('Ban', array($login));
 
 		return $this->execute('CallVoteEx', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
@@ -531,20 +531,11 @@ class Connection extends \ManiaLib\Utils\Singleton
 		$signature = $signature[0];
 		if (count($signature) == 3)
 		{
-			if ($receiver == null)
+			if (is_null($receiver))
 			{
 				$receiverString = '';
 			}
-			elseif ($receiver instanceof Player)
-			{
-				$receiverString = $receiver->login;
-			}
-			elseif (is_array($receiver))
-			{
-				$receiverString = Player::getPropertyFromArray($receiver, 'login');
-				$receiverString = implode(',', $receiverString);
-			}
-			else
+			else if (! ($receiverString = $this->getLogins($receiver)))
 			{
 				throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 			}
@@ -609,7 +600,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function chatSendServerMessage($message, $players = null, $multicall = false)
+	function chatSendServerMessage($message, $receiver = null, $multicall = false)
 	{
 		if (!is_string($message))
 		{
@@ -618,25 +609,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 		$params = array($message);
 		$method = 'ChatSendServerMessage';
-		if (is_null($players))
+		if (!is_null($receiver))
 		{
-			$params = array($message);
-		}
-		elseif (is_array($players))
-		{
-			if (count($players))
+			if (! ($logins = $this->getLogins($receiver)))
 			{
-				$params[] = implode(',', Player::getPropertyFromArray($players, 'login'));
-				$method .= 'ToLogin';
+				throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 			}
-		}
-		elseif ($players instanceof Player)
-		{
-			$params[] = $players->login;
+			$params[] = $logins;
 			$method .= 'ToLogin';
 		}
-		else
-		throw new InvalidArgumentException('players = '.print_r($players,true));
 
 		return $this->execute($method, $params, $multicall);
 	}
@@ -660,20 +641,11 @@ class Connection extends \ManiaLib\Utils\Singleton
 		$signature = $signature[0];
 		if (count($signature) == 3)
 		{
-			if ($receiver == null)
+			if (is_null($receiver))
 			{
 				$receiverString = '';
 			}
-			elseif ($receiver instanceof Player)
-			{
-				$receiverString = $receiver->login;
-			}
-			elseif (is_array($receiver))
-			{
-				$receiverString = Player::getPropertyFromArray($receiver, 'login');
-				$receiverString = implode(',', $receiverString);
-			}
-			else
+			else if (! ($receiverString = $this->getLogins($receiver)))
 			{
 				throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 			}
@@ -735,38 +707,26 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Send a text message to every Player or the a specified player(s).
 	 * If Player is null, the message will be delivered to every Player
 	 * @param string $message
-	 * @param Player|array[Player] $players Player(s) who will receive the message, put null to send the message to everyone
+	 * @param Player|string|array[Player|string] $receiver Player(s) who will receive the message, put null to send the message to everyone
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function chatSend($message, $players, $multicall = false)
+	function chatSend($message, $receiver, $multicall = false)
 	{
 		if (!is_string($message))
 		throw new InvalidArgumentException('message = '.print_r($message,true));
 
 		$params = array($message);
 		$method = 'ChatSend';
-		if (is_null($players))
+		if (!is_null($receiver))
 		{
-			$params = array($message);
-		}
-		elseif (is_array($players))
+			if (! ($logins = $this->getLogins($receiver)))
 		{
-			if (count($players))
-			{
-				$params[] = implode(',', Player::getPropertyFromArray($players, 'login'));
-				$method .= 'ToLogin';
+				throw new InvalidArgumentException('players = '.print_r($receiver,true));
 			}
-		}
-		elseif ($players instanceof Player)
-		{
-			$params[] = $players->login;
+			$params[] = $logins;
 			$method .= 'ToLogin';
-		}
-		else
-		{
-			throw new InvalidArgumentException('players = '.print_r($players,true));
 		}
 
 		return $this->execute($method, $params, $multicall);
@@ -816,19 +776,17 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function chatForwardToLogin($message, Player $sender, Player $receiver = null, $multicall = false)
+	function chatForwardToLogin($message, $sender, $receiver = null, $multicall = false)
 	{
 		if (!is_string($message))
 		{
 			throw new InvalidArgumentException('message = '.print_r($message,true));
 		}
-		if (is_null($sender))
+		if (! ($senderLogin = $this->getLogin($sender)))
 		{
 			throw new InvalidArgumentException('sender must be set');
 		}
-
-		$senderLogin = $sender->login;
-		$receiverLogin = $receiver ? $receiver->login : '';
+		$receiverLogin = $this->getLogin($receiver) ?: '';
 
 		return $this->execute(ucfirst(__FUNCTION__), array($message,$senderLogin,$receiverLogin), $multicall);
 	}
@@ -841,53 +799,34 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * the UId of the avatar to display next to it (or '255' for no avatar),
 	 * an optional 'max duration' in seconds (default: 3).
 	 * @param string $message
-	 * @param Player|array[Player] $receiver
-	 * @param Player $player
+	 * @param Player|string|array[Player|string] $receiver
+	 * @param Player|string $player
 	 * @param int $duration
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function sendNotice($receiver, $message, Player $player = null, $duration = 3, $multicall = false)
+	function sendNotice($receiver, $message, $player = null, $duration = 3, $multicall = false)
 	{
 		if (!is_string($message))
 		{
-			throw new InvalidArgumentException('player = '.print_r($player,true));
+			throw new InvalidArgumentException('message = '.print_r($message,true));
 		}
 
 		$params = array();
 		$method = 'SendNotice';
-		if (is_null($receiver))
+		if (!is_null($receiver))
 		{
-			$params[] = $message;
-			$params[] = (is_null($player) ? '' : $player->login);
-		}
-		elseif (is_array($receiver))
-		{
-			$params[] = implode(',', Player::getPropertyFromArray($receiver, 'login'));
-			$params[] = $message;
-
-			$params[] = (is_null($player) ? '' : $player->login);
+			if (! ($login = $this->getLogins($receiver)))
+				throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+			else
+				$params[] = $login;
 
 			$method .= 'ToLogin';
 		}
-		elseif ($receiver instanceof Player)
-		{
-			$params[] = $receiver->playerId;
+
 			$params[] = $message;
-
-			if (is_null($player))
-			$params[] = 255;
-			elseif ($player instanceof Player)
-			$params[] = $player->playerId;
-
-			$method .= 'ToId';
-		}
-		else
-		{
-			throw new InvalidArgumentException('players = '.print_r($players,true));
-		}
-
+		$params[] = $this->getLogin($player) ?: '';
 		$params[] = $duration;
 		return $this->execute($method, $params, $multicall);
 	}
@@ -897,7 +836,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * The first parameter is the login of the player,
 	 * the other are identical to 'SendDisplayManialinkPage'.
 	 * The players can be an object of player Type or an array of Player object
-	 * @param null|Player|array[Player] $playerLogin
+	 * @param null|Player|string|array[Player|string] $playerLogin
 	 * @param string $manialink
 	 * @param int $timeout
 	 * @param bool $hideOnClick
@@ -907,24 +846,16 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function sendDisplayManialinkPage($players, $manialink, $timeout, $hideOnClick, $multicall = false)
 	{
+		$params = array();
 		$method = 'SendDisplayManialinkPage';
-		if (is_null($players))
+		if (!is_null($players))
 		{
-			$params = array($manialink,$timeout,$hideOnClick);
-		}
-		elseif (is_array($players))
-		{
-			$params = array(implode(',', Player::getPropertyFromArray($players, 'login')),$manialink,$timeout,$hideOnClick);
+			if (! ($login = $this->getLogins($players)))
+				throw new InvalidArgumentException('players = '.print_r($players,true));
+			else
+				$params[] = $login;
+			
 			$method .= 'ToLogin';
-		}
-		elseif ($players instanceof Player)
-		{
-			$player = array($players->playerId,$manialink,$timeout,$hideOnClick);
-			$method .= 'ToId';
-		}
-		else
-		{
-			throw new InvalidArgumentException('players = '.print_r($players,true));
 		}
 
 		if (!is_string($manialink))
@@ -939,6 +870,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 		{
 			throw new InvalidArgumentException('hideOnClick = '.print_r($hideOnClick,true));
 		}
+		$params[] = $manialink;
+		$params[] = $timeout;
+		$params[] = $hideOnClick;
 
 		return $this->execute($method, $params, $multicall);
 	}
@@ -946,31 +880,23 @@ class Connection extends \ManiaLib\Utils\Singleton
 	/**
 	 * Hide the displayed manialink page on the client with the specified login.
 	 * Login can be a single login or a list of comma-separated logins.
-	 * @param null|Player|array[Player] $players
+	 * @param null|Player|string|array[Player|string] $players
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
 	function sendHideManialinkPage($players = null, $multicall = false)
 	{
+		$params = array();
 		$method = 'SendHideManialinkPage';
-		if (is_null($players))
+		if (!is_null($players))
 		{
-			$params = array();
-		}
-		elseif (is_array($players))
-		{
-			$params = array(implode(',', Player::getPropertyFromArray($players, 'login')));
+			if (! ($login = $this->getLogins($players)))
+				throw new InvalidArgumentException('players = '.print_r($players,true));
+			else
+				$params[] = $login;
+			
 			$method .= 'ToLogin';
-		}
-		elseif ($players instanceof Player)
-		{
-			$player = array($players->playerId);
-			$method .= 'ToId';
-		}
-		else
-		{
-			throw new InvalidArgumentException('players = '.print_r($players,true));
 		}
 
 		return $this->execute($method, array(), $multicall);
@@ -989,15 +915,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 	/**
 	 * Kick the player with an optional message.
-	 * @param Player $playerLogin
+	 * @param Player|string $playerLogin
 	 * @param string $message
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function kick(Player $player, $message = '', $multicall = false)
+	function kick($player, $message = '', $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -1006,7 +932,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('message = '.print_r($message,true));
 		}
 
-		return $this->execute('KickId', array($player->playerId,$message), $multicall);
+		return $this->execute('Kick', array($login, $message), $multicall);
 	}
 
 	/**
@@ -1019,7 +945,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function ban(Player $player, $message = '', $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -1028,22 +954,22 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('message = '.print_r($message,true));
 		}
 
-		return $this->execute('BanId', array($player->playerId,$message), $multicall);
+		return $this->execute('Ban', array($login, $message), $multicall);
 	}
 
 	/**
 	 * Ban the player with a message.
 	 * Add it to the black list, and optionally save the new list.
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param string $message
 	 * @param bool $saveList
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function banAndBlackList(Player $player, $message, $saveList = false, $multicall = false)
+	function banAndBlackList($player, $message, $saveList = false, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -1056,24 +982,24 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('saveList = '.print_r($saveList,true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($player->login, $message, $saveList), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login, $message, $saveList), $multicall);
 	}
 
 	/**
 	 * Unban the player
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function unBan(Player $player, $multicall = false)
+	function unBan($player, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login), $multicall);
 	}
 
 	/**
@@ -1109,34 +1035,34 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 	/**
 	 * Blacklist the player
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function blackList(Player $player, $multicall = false)
+	function blackList($player, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login), $multicall);
 	}
 
 	/**
 	 * UnBlackList the player
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function unBlackList(Player $player, $multicall = false)
+	function unBlackList($player, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login), $multicall);
 	}
 
 	/**
@@ -1203,34 +1129,34 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 	/**
 	 * Add the player to the guest list.
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function addGuest(Player $player, $multicall = false)
+	function addGuest($player, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login), $multicall);
 	}
 
 	/**
 	 * Remove the player from the guest list.
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function removeGuest(Player $player, $multicall = false)
+	function removeGuest($player, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login), $multicall);
 	}
 
 	/**
@@ -1308,7 +1234,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Sets whether buddy notifications should be sent in the chat.
 	 * login is the login of the player, or '' for global setting,
 	 * enabled is the value.
-	 * @param Player $player the object Player, or null for global setting
+	 * @param null|Player|string $player the player, or null for global setting
 	 * @param bool $enable the value.
 	 * @param bool $multicall
 	 * @return bool
@@ -1321,20 +1247,20 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('enable = '.print_r($enable,true));
 		}
 
-		$player = (is_null($player) ? '' : $player->login);
+		$player = $this->getLogin($player) ?: '';
 
 		return $this->execute(ucfirst(__FUNCTION__), array($player, $enable), $multicall);
 	}
 
 	/**
 	 * Gets whether buddy notifications are enabled for login, or '' to get the global setting.
-	 * @param $player $playerLogin the object Player, or null for global setting
+	 * @param null|Player|string $player the player, or null for global setting
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function getBuddyNotification(Player $player)
+	function getBuddyNotification($player)
 	{
-		$player = (is_null($player) ? '' : $player->login);
+		$player = $this->getLogin($player) ?: '';
 
 		return $this->execute(ucfirst(__FUNCTION__), $params);
 	}
@@ -1381,14 +1307,18 @@ class Connection extends \ManiaLib\Utils\Singleton
 	/**
 	 * Send the data to the specified player.
 	 * Login can be a single login or a list of comma-separated logins.
-	 * @param string $playerLogin Login can be a single login or a list of comma-separated logins.
+	 * @param Player|string|array[Player|string] $players
 	 * @param string $filename
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function tunnelSendData(Player $player, $filename, $multicall = false)
+	function tunnelSendData($players, $filename, $multicall = false)
 	{
+		if (! ($login = $this->getLogins($players)))
+		{
+			throw new InvalidArgumentException('players = '.print_r($players,true));
+		}
 		if (!file_exists($filename))
 		{
 			throw new InvalidArgumentException('filename = '.print_r($filename,true));
@@ -1411,7 +1341,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 		$data = new Xmlrpc\Base64($inputData);
 
-		return $this->execute('TunnelSendDataToId', array($player->playerId, $data), $multicall);
+		return $this->execute('TunnelSendDataToLogin', array($login, $data), $multicall);
 	}
 
 	/**
@@ -1440,34 +1370,34 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 	/**
 	 * Ignore the specified Player.
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function ignore(Player $player, $multicall = false)
+	function ignore($player, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login), $multicall);
 	}
 
 	/**
 	 * Unignore the specified player.
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
 	function unIgnore(Player $player, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login), $multicall);
 	}
 
 	/**
@@ -1513,16 +1443,16 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Label to send with the payment.
 	 * The creation of the transaction itself may cost coppers,
 	 * so you need to have coppers on the server account.
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param int $amount
 	 * @param string $label
 	 * @param bool $multicall
 	 * @return int The Bill Id
 	 * @throws InvalidArgumentException
 	 */
-	function pay(Player $player, $amount, $label, $multicall = false)
+	function pay($player, $amount, $label, $multicall = false)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -1535,7 +1465,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('label = '.print_r($label, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($player->login, $amount, $label), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login, $amount, $label), $multicall);
 	}
 
 	/**
@@ -1547,15 +1477,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * optional LoginTo of the payee (if empty string, then the server account is used).
 	 * The creation of the transaction itself may cost coppers,
 	 * so you need to have coppers on the server account.
-	 * @param Player $FromPlayer
+	 * @param Player|string $fromPlayer
 	 * @param int $amount
 	 * @param string $label
-	 * @param string $playerLoginTo
+	 * @param Player|string $toPlayer
 	 * @param bool $multicall
 	 * @return int
 	 * @throws InvalidArgumentException
 	 */
-	function sendBill(Player $fromPlayer, $amount, $label, Player $toPlayer = null, $multicall = false)
+	function sendBill($fromPlayer, $amount, $label, Player $toPlayer = null, $multicall = false)
 	{
 
 		if (!is_int($amount) || $amount < 1)
@@ -1566,14 +1496,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 		{
 			throw new InvalidArgumentException('label = '.print_r($label, true));
 		}
-		if (is_null($fromPlayer))
+		if (! ($from = $this->getLogin($fromPlayer)))
 		{
-			throw new InvalidArgumentException('from Player must be set');
+			throw new InvalidArgumentException('fromPlayer must be set');
 		}
 
-		$toPlayer = (is_null($toPlayer) ? '' : $toPlayer->login);
+		$to = $this->getLogin($toPlayer) ?: '';
 
-		return $this->execute(ucfirst(__FUNCTION__), array($fromPlayer->login, $amount, $label, $toPlayer), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($from, $amount, $label, $to), $multicall);
 	}
 
 	/**
@@ -1991,20 +1921,20 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Saves a replay with the ghost of all the players' best race.
 	 * First parameter is the player object(or null for all players),
 	 * Second parameter is the filename, or '' for an automatic filename.
-	 * @param Player $player is the player object(or null for all players)
+	 * @param null|Player|string $player the player (or null for all players)
 	 * @param string $filename is the filename, or '' for an automatic filename
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function saveBestGhostsReplay(Player $player = null, $filename = '', $multicall = false)
+	function saveBestGhostsReplay($player = null, $filename = '', $multicall = false)
 	{
 		if (!is_string($filename))
 		{
 			throw new InvalidArgumentException('filename = '.$print_r($filename, true));
 		}
 
-		$playerLogin = (is_null($player) ? '' : $player->login);
+		$playerLogin = $this->getLogin($player) ?: '';
 
 		return $this->execute(ucfirst(__FUNCTION__),array($playerLogin,$filename),$multicall);
 	}
@@ -2012,17 +1942,17 @@ class Connection extends \ManiaLib\Utils\Singleton
 	/**
 	 * Returns a replay containing the data needed to validate the current best time of the player.
 	 * The parameter is the login of the player.
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @return string base64 encoded
 	 * @throws InvalidArgumentException
 	 */
-	function getValidationReplay(Player $player)
+	function getValidationReplay($player)
 	{
-		if (is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute(ucfirst(__FUNCTION__),array($player->login,$filename));
+		return $this->execute(ucfirst(__FUNCTION__),array($login));
 	}
 
 	/**
@@ -3619,25 +3549,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getCurrentRankingForLogin($player = null)
 	{
-		if ($player == null)
-		{
-			$playerString = '';
-		}
-		elseif ($player instanceof Player)
-		{
-			$playerString = $player->login;
-		}
-		elseif (is_array($player))
-		{
-			$playerString = Player::getPropertyFromArray($player, 'login');
-			$playerString = implode(',', $playerString);
-		}
-		else
-		{
-			throw new InvalidArgumentException('player = '.print_r($player,true));
-		}
+		$login = $this->getLogin($player) ?: '';
 		
-		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($playerString)));
+		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($login)));
 	}
 
 	/**
@@ -3673,14 +3587,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 	/**
 	 * Force the team of the player. Only available in team mode. You have to pass the login and the team number (0 or 1).
-	 * @param string $playerLogin
+	 * @param Player|string $player
 	 * @param int $teamNumber
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function forcePlayerTeam(Player $player, $teamNumber, $multicall = false)
+	function forcePlayerTeam($player, $teamNumber, $multicall = false)
 	{
-		if(is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -3689,19 +3603,19 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('teamNumber = '.print_r($teamNumber,true));
 		}
 
-		return $this->execute('ForcePlayerTeamId', array($player->playerId, $teamNumber), $multicall);
+		return $this->execute('ForcePlayerTeam', array($login, $teamNumber), $multicall);
 	}
 
 	/**
 	 * Force the spectating status of the player. You have to pass the login and the spectator mode (0: user selectable, 1: spectator, 2: player).
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param int $spectatorMode
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function forceSpectator(Player $player, $spectatorMode, $multicall = false)
+	function forceSpectator($player, $spectatorMode, $multicall = false)
 	{
-		if(is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -3710,25 +3624,25 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('spectatorMode = '.print_r($spectatorMode,true));
 		}
 
-		return $this->execute('ForceSpectatorId', array($player->playerId, $spectatorMode), $multicall);
+		return $this->execute('ForceSpectator', array($login, $spectatorMode), $multicall);
 	}
 
 	/**
 	 * Force spectators to look at a specific player. You have to pass the login of the spectator (or '' for all) and
 	 * the login of the target (or '' for automatic), and an integer for the camera type to use (-1 = leave unchanged, 0 = replay, 1 = follow, 2 = free).
-	 * @param Player $player
-	 * @param Player $target
+	 * @param Player|string $player
+	 * @param Player|string $target
 	 * @param int $cameraType
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function forceSpectatorTarget(Player $player,Player $target, $cameraType, $multicall = false)
+	function forceSpectatorTarget($player, $target, $cameraType, $multicall = false)
 	{
-		if(is_null($player))
+		if (! ($playerLogin = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if(is_null($target))
+		if (! ($targetLogin = $this->getLogin($target)))
 		{
 			throw new InvalidArgumentException('target must be set');
 		}
@@ -3737,23 +3651,23 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('cameraType = '.print_r($cameraType,true));
 		}
 
-		return $this->execute('ForceSpectatorTargetId', array($player->playerId, $target->playerId, $cameraType), $multicall);
+		return $this->execute('ForceSpectatorTarget', array($playerLogin, $targetLogin, $cameraType), $multicall);
 	}
 
 	/**
 	 * Pass the login of the spectator. A spectator that once was a player keeps his player slot, so that he can go back to race mode.
 	 * Calling this function frees this slot for another player to connect.
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function spectatorReleasePlayerSlot(Player $player, $multicall = false)
+	function spectatorReleasePlayerSlot($player, $multicall = false)
 	{
-		if(is_null($player))
+		if (! ($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute('SpectatorReleasePlayerSlotId', array($player->playerId), $multicall);
+		return $this->execute('SpectatorReleasePlayerSlot', array($login), $multicall);
 	}
 
 	/**
@@ -3895,7 +3809,42 @@ class Connection extends \ManiaLib\Utils\Singleton
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
+	/**
+	 * Returns the login of the given player
+	 * @param mixed $player Player or string
+	 * @return string
+	 */
+	private function getLogin($player)
+	{
+		if(is_string($player))
+			return $player;
+		if($player instanceof Player)
+			return $player->login;
+		return null;
+	}
 
+	/**
+	 * Returns logins of given players
+	 * @param mixed $player Player or string or array
+	 * @return string
+	 */
+	private function getLogins($players, $name='players')
+	{
+		if(is_array($players))
+		{
+			$logins = array();
+			foreach($players as $i => $player)
+			{
+				if ( ($login = $this->getLogin($player)) )
+					$logins[] = $login;
+				else
+					return null;
+			}
+
+			return implode(',', $logins);
+		}
+		return $this->getLogin($players);
+	}
 }
 
 /**
