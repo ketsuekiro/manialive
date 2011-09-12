@@ -8,15 +8,14 @@
  * @author      $Author$:
  * @date        $Date$:
  */
+
 namespace ManiaLivePlugins\Standard\Bill;
 
-use ManiaLive\Features\Admin\AdminGroup;
-
 use ManiaLib\Filters\Validation;
+use ManiaLive\Features\Admin\AdminGroup;
 
 class Plugin extends \ManiaLive\PluginHandler\Plugin
 {
-
     function onInit()
 	{
 		$this->setVersion(1.0);
@@ -38,7 +37,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 
 		$command = $this->registerChatCommand('checkBill', 'checkBill', 1, true);
 		$command->help = 'Give the current state of the bill'."\n".
-		'sample of usage: /give 42 where 42 is the id of the bill';
+		'sample of usage: /checkBill 42 where 42 is the id of the bill';
 
 		$this->setPublicMethod('payFromServer');
 		$this->setPublicMethod('payToServer');
@@ -49,79 +48,73 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		$this->fromServer('', $payee, $amount, $label);
 	}
 
-	function fromServer($login, $payee, $amount, $label = '')
-	{
-		Validation::int($amount,0);
-		$label = $label ? $label : $this->storage->serverLogin.'To'.$payee;
-		$billId = $this->connection->sendBill($this->storage->serverLogin, $amount, $label, $payee);
-		$player = ($login ? $this->storage->getPlayerObject($login) : AdminGroup::get());
-		$this->connection->chatSendServerMessage('The bill has been created with the id '.$billId, $player, true);
-	}
-
 	function payToServer($pluginId, $playerLogin, $amount, $label)
 	{
 		$this->connection->chatSendServerMessage('The plugin '.$pluginId.' has created a bill for you to the server of '.$amount.' coppers');
 		$this->toServer($playerLogin, $amount, $label);
 	}
 
-	function toServer($fromLogin, $amount, $label = '')
+	function fromServer($login, $payee, $amount, $label = '')
 	{
-		$player = $this->storage->getPlayerObject($fromLogin);
-		if(!$player)
-		{
-			return;
-		}
-
 		try
 		{
-			Validation::int($amount,0);
+			Validation::int($amount, 0);
 		}
 		catch(\Exception $e)
 		{
-				$this->connection->chatSendServerMessage('$F00The amount is incorrect', $player, true);
-				return;
+			$this->connection->chatSendServerMessage('$F00The amount is incorrect', $login, true);
+			return;
+		}
+		$label = $label ? $label : $this->storage->serverLogin.'To'.$payee;
+		$billId = $this->connection->sendBill($this->storage->serverLogin, (int)$amount, $label, $payee);
+		$this->connection->chatSendServerMessage('The bill has been created with the id '.$billId, $login, true);
+	}
+
+	function toServer($fromLogin, $amount, $label = '')
+	{
+		try
+		{
+			Validation::int($amount, 0);
+		}
+		catch(\Exception $e)
+		{
+			$this->connection->chatSendServerMessage('$F00The amount is incorrect', $fromLogin, true);
+			return;
 		}
 
-		$label = $label ? $label : $player->login.'ToServer'.$this->storage->serverLogin;
+		$label = $label ? $label : $fromLogin.'ToServer'.$this->storage->serverLogin;
 
-		$billId = $this->connection->sendBill($player->login, $amount, $label);
-		$this->connection->chatSendServerMessage('The bill has been created with the id '.$billId, $player, true);
+		$billId = $this->connection->sendBill($fromLogin, (int)$amount, $label);
+		$this->connection->chatSendServerMessage('The bill has been created with the id '.$billId, $fromLogin, true);
 	}
 
 	function toPlayer($payerLogin, $payeeLogin, $amount)
 	{
 		if($payerLogin == $payeeLogin)
 		{
-			$this->connection->chatSendServerMessage('$F00You can\'t give coppers to yourself', $player, true);
-			return;
-		}
-
-		$payer = $this->storage->getPlayerObject($payerLogin);
-
-		if(!$player)
-		{
+			$this->connection->chatSendServerMessage('$F00You can\'t give coppers to yourself', $payerLogin, true);
 			return;
 		}
 
 		try
 		{
-			Validation::int($amount,0);
+			Validation::int($amount, 0);
 		}
 		catch(\Exception $e)
 		{
-				$this->connection->chatSendServerMessage('$F00The amount is incorrect', $player, true);
-				return;
+			$this->connection->chatSendServerMessage('$F00The amount is incorrect', $payerLogin, true);
+			return;
 		}
 
-		$billId = $this->connection->sendBill($payer->login, $amount, $payer->login.'To'.$payeeLogin, $payeeLogin);
-		$this->connection->chatSendServerMessage('The bill has been created with the id '.$billId, $player, true);
+		$billId = $this->connection->sendBill($payerLogin, (int)$amount, $payerLogin.'To'.$payeeLogin, $payeeLogin);
+		$this->connection->chatSendServerMessage('The bill has been created with the id '.$billId, $payerLogin, true);
 	}
 
 	function checkBill($login, $billId)
 	{
 		$bill = $this->connection->getBillState($billId);
 
-		$this->connection->chatSendServerMessage('The bill n°'.$billId.' is currently $<$o'.$bill->stateName.'$>', $this->storage->getPlayerObject($login),true);
+		$this->connection->chatSendServerMessage('The bill n°'.$billId.' is currently $<$o'.$bill->stateName.'$>', $login, true);
 	}
 }
 ?>
