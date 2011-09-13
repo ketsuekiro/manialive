@@ -66,7 +66,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 			return;
 		}
 		$label = $label ? $label : $this->storage->serverLogin.'To'.$payee;
-		$billId = $this->connection->sendBill($this->storage->serverLogin, (int)$amount, $label, $payee);
+		$billId = $this->connection->pay($payee, (int)$amount, $label);
 		$this->connection->chatSendServerMessage('The bill has been created with the id '.$billId, $login, true);
 	}
 
