@@ -1485,7 +1485,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return int
 	 * @throws InvalidArgumentException
 	 */
-	function sendBill($fromPlayer, $amount, $label, Player $toPlayer = null, $multicall = false)
+	function sendBill($fromPlayer, $amount, $label, $toPlayer = null, $multicall = false)
 	{
 
 		if (!is_int($amount) || $amount < 1)
