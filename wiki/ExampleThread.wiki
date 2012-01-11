@@ -11,19 +11,20 @@ You can now try to disable threading, then you will see how the main application
 
 // it is important to put plugins into the right namespace
 // otherwise they can't be loaded!
-// see 'The Libraries-Folder Structure' and 'Conventions for Creating Plug-ins'
+// see 'The Libraries-Folder Structure' and 'Conventions for Creating Plugins'
 // in the developer doc.
 namespace ManiaLivePlugins\Examples\ThreadingExample;
 
-// rename \ManiaLive\Utilities\Console to just Console.
+// rename \ManiaLive\Threading\ThreadHandler to just ThreadHandler.
 // see php manual for at least 5.3 in namespaces.
-use ManiaLive\Utilities\Console;
+use ManiaLive\Threading\ThreadHandler;
 
 // the class' name has to be the same as the name of the file.
 // see the 'Conventions for Creating Plug-ins' in the developer doc.
 class ThreadingExample extends \ManiaLive\PluginHandler\Plugin
 {
-	protected $started = 0;
+	private $started = 0;
+	private $threadId;
 	
 	function onInit() {}
 	
@@ -34,7 +35,7 @@ class ThreadingExample extends \ManiaLive\PluginHandler\Plugin
 		$this->enableApplicationEvents();
 		
 		// this command launches a new thread for our jobs.
-		$this->createThread();
+		$this->threadId = ThreadHandler::getInstance()->createThread();
 	}
 	
 	// occures every time the application has finished a loop.
@@ -42,13 +43,14 @@ class ThreadingExample extends \ManiaLive\PluginHandler\Plugin
 	// callbacks etc.
 	function onPreLoop()
 	{
-		Console::println('one loop!');
+		$this->writeConsole('one loop!');
 	}
 	
 	// once all plugins are loaded we start
 	// to create our workload.
 	function onReady()
 	{
+		$threadHandler = ThreadHandler::getInstance();
 		for ($i = 0; $i < 100; $i++)
 		{
 			// we initialize a instance of our dirty work runnable.
@@ -57,10 +59,10 @@ class ThreadingExample extends \ManiaLive\PluginHandler\Plugin
 			// and we send every one to the thread we started above.
 			// second parameter defines the method that will be
 			// invoked when the work has been completed.
-			$this->sendWorkToOwnThread($work, 'onWorkDone');
+			$threadHandler->addTask($work, 'onWorkDone');
 			
 			// count the work instances.
-			$this->started++;
+			++$this->started;
 		}
 	}
 	
@@ -68,11 +70,10 @@ class ThreadingExample extends \ManiaLive\PluginHandler\Plugin
 	{
 		// counting down, if we haven't any left, then
 		// we have finished all the jobs!
-		$this->started--;
-		if ($this->started == 0)
-			Console::println('All jobs have been done!');
+		if (--$this->started == 0)
+			$this->writeConsole('All jobs have been done!');
 		else
-			Console::println("{$this->started} threads remain ...");
+			$this->writeConsole("{$this->started} threads remain ...");
 	}
 }
 ?>
@@ -91,7 +92,7 @@ namespace ManiaLivePlugins\Examples\ThreadingExample;
 // every class that will be send to another process
 // needs to extend the runnable class and overwrite
 // its run() method.
-class DirtyWork extends \ManiaLive\Threading\Runnable
+class DirtyWork implements \ManiaLive\Threading\Runnable
 {
 	// you can have parameters.
 	public $max;
