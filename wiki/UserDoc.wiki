@@ -5,7 +5,7 @@
 
 = Requirements =
 
-  * Php at minimum version *5.3*<br>with cURL extension enabled (since r194)
+  * Php at minimum version *5.3.1*<br>with cURL extension enabled (since r194)
   * Windows or Linux System.
   * Trackmania Dedicated Server
   * Php SQLite Extension`*`
@@ -22,9 +22,8 @@ In addition you also might want to download the Standard Plugins package.<br>
 Extract the ManiaLive archive somewhere you have access to.<br>
 To install the plugins, just extract them into the ManiaLive folder that you have just created.
 
-== Upgrade (since r1830) ==
+== Upgrade ==
 
-This only applies if you currently have a version > 1830 installed.<br>
 When using ManiaLive it will display priodic messages when there's a new version ready.<br>
 If you want to upgrade to the new version without much effort, it is recommended to use the update script.<br>
 
@@ -99,32 +98,37 @@ To be interpreted correctly, each element has to be put on a single line and may
 
 The easiest of all is probably the comment.
 Beginning with a semicolon at the first character of the line and whatever text afterwards, it is used for making descriptions or formatting.
-
+{{{
 ; This is a line of the configuration that will be ignored.
-
+}}}
 === Assignment ===
 An assignment can be made by just writing the option name onto the left side of an equality sign and the value you want to set for it on the right side. Some options expect text, some numbers and others may only be switches which you can set using “On” or “Off”.
-
-logsPath = C:\Logs
-
+{{{
+config.logsPath = C:\Logs
+}}}
 === Assigning more than one value ===
 There are options which can take more than one value, for instance there might be an option to set the logins of the administrators that are allowed to control the server from an in-game interface. Using the global option style you would always overwrite the previously set value. To add another value to an option you simply add opening and closing brackets right after the name. This is not supported by every option, there should be comments with examples how to use each option.
 {{{
-admins[] = login1
-admins[] = login2
+manialive.admins[] = login1
+manialive.admins[] = login2
 }}}
 === Configuring Sub-Modules ===
 Module and Option are divided by a simple full stop. Right after, without space, there follows the name of the setting. Then once again equals sign and the value you want to set. Previously defined rules apply.
-
+{{{
 server.port = 5000
-
+}}}
 === Plugin Option ===
-To configure plugins you can simply use the ManiaLive's plugins sub-module to do that. After that use the plugin's ID (“Author\PluginName”) and put another full stop to separate the setting its name from the plugin's ID.
-
-plugins.Author\Plugin.message = 'Hello World'
-
+To configure plugins you to know the config classes for them. A widely used convention is to call it Config, so most the time you'll be able to it this way
+{{{
+ManiaLivePlugins\Author\Plugin\Config.message = 'Hello World'
+}}}
+For plugin configuration, you can also declare some aliases to make it easier. Those two lines are equivalent to the previous line
+{{{
+alias aplugin = ManiaLivePlugins\Author\Plugin\Config
+aplugin.message = 'Hello World'
+}}}
 === Host Overrides ===
-Finally there's the possibility to add configuration that is only applied on a specific computer. “[Hostname]” where the text within the brackets is the name of your computer on the local network. On windows you can get that name by simply typing “hostname” on the console.
+Finally there's the possibility to add configuration that is only applied on a specific computer. “[hostname: aHost]” where aHost is the name of your computer on the local network. On windows you can get that name by simply typing “hostname” on the console.
 Everything after this tag (until the next one) will be only executed on your machine.
 
 = Startup Configuration =
@@ -150,16 +154,16 @@ Establishes the dedicated server connection and can be configured with the follo
 
 === Administrators ===
 The admins sub-module manages a list of administrators. You can add new admins to the logins list, by adding a line:
-
-admins.logins[] = login
-
+{{{
+manialive.admins[] = 'login'
+}}}
 || http://files.manialive.com/doc/2_edit_config.png ||
 
 === Plugins ===
 Is a module, that dynamically loads plugins on application startup. Add a new plugin, that you want to load, by adding a line:
-
-plugins.load[] = author\plugin
-
+{{{
+manialive.plugins[] = 'Author\Plugin'
+}}}
 Each plugin that is loaded needs to be located in the “ManiaLivePlugins” folder and has to have two sub-folders, one named after the author and one after the plugin itself.
 In an author's folder there may be several plugin folders.
 
@@ -168,7 +172,7 @@ In an author's folder there may be several plugin folders.
 === Threading ===
 This module will, if supported by the plugin, assign blocking or work with heavy calculations to other processes. This way the application's ability to respond is reserved.
 If you are experiencing any problems, then try to disable threading on first step, the application then will switch in compatibility mode and will, very simple, try to emulate threading behaviour.
-Options supported are: threading.enabled, threading.busy_timeout, threading.ping_timeout, threading.sequential_timeout.
+Options supported are: threading.enabled, threading.busyTimeout, threading.maxTries, threading.sequentialTimeout.
 
 === ManiaHome ===
 You can enable this for creating a link between your server and ManiaHome. If you did, all achievements that are made on your server can be announced by plugins that are making use of this feature. This way, for instance, a plugin that manages records can inform all friends of a certain player that he just drove a new record on a server's track.
@@ -224,7 +228,7 @@ An easy explanation on how to fix this is [http://blog.randell.ph/2010/04/15/war
 
 === Fatal error: Exception thrown without stack frame in Unknown on line 0 ===
 
-This exception has the same reason as the one above, check out [http://blog.randell.ph/2010/04/15/warning-date-it-is-not-safe-to-rely-on-the-systems-timezone-settings/ the mentioned link] to fix it.
+This exception can happen when shutting down ManiaLive on Linux while using the TeamSpeak plugin.
 
 = Logging =
 When there's an error, then usually the first thing that you want to do is to check the log-files. But where to find them?
