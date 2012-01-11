@@ -61,15 +61,14 @@ namespace ManiaLivePlugins\Examples\WindowExample\Gui\Windows;
 // you need to rename every component, that you are using in the code.
 // for more elements to use, you can check the
 // “Important Namespaces and its Classes”-section.
-use ManiaLive\Gui\Toolkit\Elements\Icons64x64_1;
-use ManiaLive\Gui\Toolkit\Elements\Label;
-use ManiaLive\Gui\Windowing\Controls\Panel;
+use ManiaLib\Gui\Elements\Icons64x64_1;
+use ManiaLib\Gui\Elements\Label;
 
 // here the actual creation process starts.
 // important: don’t forget to inherit the Window class.
 // in this case we are extending the ManagedWindow, this will
 // automatically put the window background and a cross to close it.
-class SimpleWindow extends \ManiaLive\Gui\Windowing\ManagedWindow
+class SimpleWindow extends \ManiaLive\Gui\ManagedWindow
 {
 	// protected properties for every component that you add to your window.
 	// note: you can set public here to be able to access them from outside
@@ -80,8 +79,10 @@ class SimpleWindow extends \ManiaLive\Gui\Windowing\ManagedWindow
 	// the window is used.
 	// we initialize the components and add them to the window, so once the
 	// window is rendered, all its components will be too.
-	protected function initializeComponents()
+	protected function onConstruct()
 	{
+		// calling parent method to create default elements
+		parent::onConstruct()
 		// set a default size for the window.
 		$this->setSize(40, 30);
 
@@ -97,7 +98,7 @@ class SimpleWindow extends \ManiaLive\Gui\Windowing\ManagedWindow
 
 	// when the size of the window is changed we will also need to
         // resize all its components.
-	protected function onResize()
+	protected function onResize($oldX, $oldY)
 	{
 		// position and resize text ...
 		$this->text->setPosition(2, 6);
