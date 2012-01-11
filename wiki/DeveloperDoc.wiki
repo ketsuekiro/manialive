@@ -10,7 +10,7 @@ Open the ManiaLive folder and take a look at what you find inside:<br>
 *data* : holds files/sqlite databases for threading.<br>
 *libraries* : contains all code (core and plug-ins) of ManiaLive.<br>
 *logs* : self-explanatory, by default contains all log-files that are generated.<br>
-In the next step we take a closer look onto the libraries folder. It contains the “ManiaLive” and the “ManiaHome” package. At last you can also find a folder in there called “ManiaLivePlugins”, that of course is where you will begin writing.
+In the next step we take a closer look onto the libraries folder. It contains “ManiaLib”, “ManiaLive” and “Maniaplanet” packages. At last you can also find a folder in there called “ManiaLivePlugins”, that of course is where you will begin writing.
 
 = General Conventions =
 
@@ -24,47 +24,47 @@ It will save you a lot of work - it might not be possible for you to publish you
   # Namespaces are folders in the file-system, so if you create a new class, make sure it is located in the right namespace!
   # Classes have to be in files that have the same name and end with .php<br>class ManiaLive\Example will be in the file Example.php in the folder ManiaLive.
 
-= The !ManiaLivePlugins-Folder Structure =
+= The ManiaLivePlugins-Folder Structure =
 
-The “ManiaLivePlugins” folder will contain only sub-folders named after plug-in authors. Each of them contains sub-folders named after the plug-ins itself and in each of those folders you will find at least a php file that is named like the folder it is contained by, so for instance:
+The “ManiaLivePlugins” folder will contain only sub-folders named after plug-in authors. Each of them contains sub-folders named after the plugins themselves and in each of those folders you will find at least a php file that is named like the folder it is contained by, so for instance:
 ManiaLivePlugins/Bob/Dedimania/Dedimania.php
-Will be the main file for the plug-in named “Dedimania” and who's author is “Bob”.
+Will be the main file for the plugin named “Dedimania” and who's author is “Bob”.
 It is a good habit to always use the same author name. One way to avoid collisions with other plug-in authors is to use the unique Trackmania login.
-In ManiaLive sometimes there is used a plug-in-id. This consists of the author name of the plug-in, a backslash and the name of the plug-in (eg. Bob\Dedimania).
-Within the folder of a plug-in you can create your own file structure (you are restricted to use some conventions listed below).
+In ManiaLive sometimes there is used a plugin's id. This consists of the author name of the plug-in, a backslash and the name of the plugin (eg. Bob\Dedimania).
+Within the folder of a plugin you can create your own file structure (you are restricted to use some conventions listed below).
 
-= Conventions for Creating Plug-ins =
+= Conventions for Creating Plugins =
 
   # Every Plug-in needs to be located in the “ManiaLivePlugins" folder.	
   # In “ManiaLivePlugins” there has to be a folder named after the plug-in's author.
-  # A plug-in is situated in a folder named after the plug-in's author. As for author name it is recommended to use the TM login to avoid naming collisions with other authors.	
+  # A plug-in is situated in a folder named after the plugin's author. As for author name it is recommended to use the TM login to avoid naming collisions with other authors.	
   # A Plug-in consists of a folder with the name of the plug-in.
-  # In the folder, that is named like the plug-in, there has to be a file which is named after the plug-in with “.php” extension.
-  # This file needs to have a definition for a class that also has the name of the plug-in.
-  # The class, which has got the plug-in's name, has to be inherited from the ManiaLive\Plug-inHandler\Plugin class.
+  # In the folder, that is named like the plugin, there has to be a file which is named after the plugin with “.php” extension.
+  # This file needs to have a definition for a class that also has the name of the plug-n.
+  # The class, which has got the plugin's name, has to be inherited from the ManiaLive\PluginHandler\Plugin class.
 
 = Loading a Plug-in =
 
 You can load a plug-in that has been created using the conventions above by simply adding a line into your “config.ini”:<br>
-plug-ins.load[] = *Bob\Dedimania*<br>
-The bold text has to be replaced by the ID of your plug-in, which is described in “The Plug-in's Folder Structure”.
+manialive.plugins[] = *Bob\Dedimania*<br>
+The bold text has to be replaced by the ID of your plugin, which is described in “The Plugin's Folder Structure”.
 To see what configuration is loaded check the Loader_pid.txt log in your logs folder.
 
 = The Plug-in Class =
 
-*\ManiaLive\PluginHandler\Plugin* is the base class for all plug-ins and provides the interface for all events that can occur.
+*\ManiaLive\PluginHandler\Plugin* is the base class for all plugins and provides the interface for all events that can occur.
 There are many helper methods that are built into the Plug-in class for beginners to keep ways short. If you are an experienced programmer, you can figure out how to use the different components that are wrapped into the helpers yourself.
 When you create your plug-in, you can specify how the loader will be treating it during the load process.
 
 == Set Plug-in Version ==
 
-It is a good habit to increase a plug-in’s version number with every release and change of its features. This way all depending plug-ins know if they might not be supporting the current version anymore.
-Setting a version number is done by using the *setVersion(float $number)* method.
+It is a good habit to increase a plug-in’s version number with every release and change of its features. This way all depending plugins know if they might not be supporting the current version anymore.
+Setting a version number is done by using the *setVersion(mixed $version)* method.
 
 == Add Dependencies ==
 
-If your plug-in is using functionalities of a currently existing one, you can easily add a dependency to this.
-All dependencies are obligatory, so if a plug-in, that has been added to the dependency-list is not loaded - due to whatever - also every depending plug-in will fail to load.
+If your plugin is using functionalities of a currently existing one, you can easily add a dependency to this.
+All dependencies are mandatory, so if a plugin, that has been added to the dependency list is not loaded - due to whatever - also every depending plugin will fail to load.
 To add a dependency, use the following sample:
 
 {{{
@@ -74,59 +74,60 @@ $this->addDependency($dependency);
 
 = Make a Plug-in Configurable =
 
-If you want to be able to configure your plugin from the global config.ini, then all you will have to do is to add a static public property to your class.<br>
-For instance you have a class like that:
+If you want to be able to configure your plugin from the global config.ini, then all you will have to declare another class inheriting from ManiaLib\Utils\Singleton and defining public attributes. Usually, using Config as class name is a good idea<br>
+For instance you declare a class like that:
 {{{
 <?php
 namespace ManiaLivePlugins\Example\Foobar;
 
-class Foobar extends \ManiaLive\PluginHandler\Plugin
+class Config extends \ManiaLib\Utils\Singleton
 {
-	static $setting = 0;
+	public $setting = 0;
 }
 ?>
 }}}
 Now you could add a line in your config.ini
 {{{
-plugins.Example\Foobar.setting = 42
+ManiaLivePlugins\Example\Foobar\Config.setting = 42
 }}}
 and your property would be overwritten when loading the plugin!<br>
 Easy, right?
 
 = Events =
 
-If you have created the plug-in file regarding the “Conventions for Creating Plug-ins” and added a line to the config.ini to load it, it won't be doing anything yet.
+If you have created the plugin file regarding the “Conventions for Creating Plugins” and added a line to the config.ini to load it, it won't be doing anything yet.
 One of the core components of ManiaLive is the event dispatching system.
-All of the plug-in's interaction is triggered by some event taking place in the core components.<br>
-When a plug-in is loaded it is being hooked to the so called Dispatcher.
+All of the plugin's interaction is triggered by some event taking place in the core components.<br>
+When a plugin is loaded it is being hooked to the so called Dispatcher.
 To react on events you simply need to define a method in your class with the corresponding name, that will be called every time this event occurs.<br>
-*Every plug-in will only be notified of the event types that it is enabled for.*<br>
-On start-up the only events that will be received are the “Plug-in Events”, any other category needs to be enabled.<br>
+*Every plugin will only be notified of the event types that it is enabled for.*<br>
+On start-up the only events that will be received are the “Plugin Events”, any other category needs to be enabled.<br>
 In the following the different event types and its corresponding event methods are described.
 
-== Plug-in Events ==
+== Plugin Events ==
 
 === onInit() ===
-Called before the plug-in is actually loaded and registered for any events. After onInit is executed the loading process can still fail. This is why *onInit* should only be used to define plug-in specific properties that are important for the loading process. This can for instance be the version number or dependencies.
+Called before the plugin is actually loaded and registered for any events. After onInit is executed the loading process can still fail. This is why *onInit* should only be used to define plugin specific properties that are important for the loading process. This can for instance be the version number or dependencies.
 
 === onLoad() ===
-Your plug-in has been accepted, but not all plug-ins have been loaded yet.
-So if you want to interact with some other plug-in, this is still the wrong place.
+Your plugin has been accepted, but not all plugins have been loaded yet.
+So if you want to interact with some other plugin, this is still the wrong place.
 
 === onReady() ===
-Plug-in loading is completely finished. If you now want to access interfaces of other plug-ins, this is the right place to do it.
+Plugin loading is completely finished. If you now want to access interfaces of other plugins, this is the right place to do it.
 
 == Application Events ==
 
 Disabled by default.
-Enable them in the plug-in's *onLoad* or *onReady* event:
+Enable them in the plugin's *onLoad* or *onReady* event:
+{{{
 $this->enableApplicationEvents();
-
+}}}
 === onRun() ===
 Is triggered directly after *onReady*, the only difference is that you need to enable the application events.
 
 === onPreLoop() ===
-The ManiaLive application is one big loop of instructions which is repeated up to 50 times per second. *onPreLoop* is executed on begin of every round, putting any code here can drastically decrease the performance of your application, so be aware!
+The ManiaLive application is one big loop of instructions which is repeated up to 60 times per second. *onPreLoop* is executed on begin of every round, putting any code here can drastically decrease the performance of your application, so be aware!
 
 === onPostLoop() ===
 Is executed on every loop's round end.
@@ -146,55 +147,46 @@ You can find a detailed explanation of the dedicated server's events in the “L
 To get the corresponding method for a callback, you just prefix the callback's name with an “on”. The callback “PlayerConnect” for instance becomes *onPlayerConnect*.
 Parameters remain unchanged.
 
-== Windowing Events ==
-
-Disabled by default.
-Enable them in the plug-in's *onLoad* or *onReady* event:
-{{{
-$this->enableWindowingEvents();
-}}}
-
-=== onWindowClose($login, $window) ===
-
-A window has been closed on some player's screen.
-
 == Threading Events ==
 
 Disabled by default.
-Enable them in the plug-in's *onLoad* or *onReady* event:
+Enable them in the plugin's *onLoad* or *onReady* event:
 {{{
 $this->enableThreadingEvents();
 }}}
 
-=== onThreadStart($thread) ===
+=== onThreadStart($threadId) ===
 A Thread has been started successfully.
 
-=== onThreadDies($thread) ===
+=== onThreadDies($threadId) ===
 A thread that is not busy did not respond to a ping within a given time window.
 It will be restarted.
 
-=== onThreadTimesOut($thread) ===
+=== onThreadTimesOut($threadId) ===
 Thread has been working for too long and is not responding.
 Will be killed and restarted.
 
-=== onThreadRestart($thread) ===
+=== onThreadRestart($threadId) ===
 A thread that has either died or timed out is restarted.
+
+=== onThreadKilled($threadId) ===
+A thread has been closed on purpose
 
 == Storage Events ==
 
 Disabled by default.
-Enable this in the plug-in's *onLoad* or *onReady* event:
+Enable this in the plugin's *onLoad* or *onReady* event:
 {{{
 $this->enableStorageEvents();
 }}}
 
-=== onPlayerNewBestScore($player, $score_old, $score_new) ===
+=== onPlayerNewBestScore($player, $scoreOld, $scoreNew) ===
 Player got a new best score on the current track.
 
-=== onPlayerNewBestTime($player, $best_old, $best_new) ===
+=== onPlayerNewBestTime($player, $bestOld, $bestNew) ===
 Player drove a new best time on the current track.
 
-=== onPlayerNewRank($player, $rank_old, $rank_new) ===
+=== onPlayerNewRank($player, $rankOld, $rankNew) ===
 Player climbed up or moved down in the rankings table of the current track.
 
 == Ticker Event ==
@@ -213,12 +205,12 @@ Occurs every second.
 For the purpose of displaying text on the screen, there is the *writeConsole(string $text)* helper method that is inherited with the Plugin class. To log text into a plug-in specific log file, use the *writeLog(string $text)*.
 Never use the print or echo functions directly, because if necessary the intern Console class is going to write into the log file. For more freedom, you can also use the *\ManiaLive\Utilities\Console* and *\ManiaLive\Utilities\Logger* classes directly.
 
-= Plug-in Interaction =
+= Plugin Interaction =
 
-To interact between Plug-ins, you can use the intern method *setPublicMethod(string $method)* to expose a method from the plug-in to other loaded plug-ins. Plug-ins normally don't have access to each other, except you explicitly set a method to public.
-Once that is done, you can use *callPublicMethod(string $plugin_id, string $method, mixed $arg1, mixed $arg2 …)* to call a method from another plug-in, that has been set public before – of course.
-To check whether the plug-in exists, you can call *isPluginLoaded(string $plugin_id, float $min, float $max)* before, instead of adding the plug-in to the dependencies list.
-You should avoid adding dependencies as much as possible. Leave the parameters min and max out if you do not care about plug-in's version.
+To interact between Plugins, you can use the intern method *setPublicMethod(string $method)* to expose a method from the plug-in to other loaded plug-ins. Plugins normally don't have access to each other, except you explicitly set a method to public.
+Once that is done, you can use *callPublicMethod(string $plugin_id, string $method, mixed $arg1, mixed $arg2, ...)* to call a method from another plugin, that has been set public before – of course.
+To check whether the plugin exists, you can call *isPluginLoaded(string $pluginId, mixed $min, mixed $max)* before, instead of adding the plugin to the dependencies list.
+You should avoid adding dependencies as much as possible. Leave the parameters min and max out if you do not care about plugin's version.
 
 = Storage Usage =
 
@@ -226,23 +218,22 @@ The storage class, is used to avoid you to send request to the server to get dat
 
   * *players* : which is an array containing *\ManiaLive\DedicatedApi\Structures\Player* detailed information. Those players are the people playing the current track and not those in spectator mod.
   * *spectators* : this is an array containing *\ManiaLive\DedicatedApi\Structures\Player* detailed information.<br>Those players are the people connected as spectator on the server.
-  * *ranking* : is an sorted array containing the current ranking.<br>Each value is of type *\ManiaLive\DedicatedApi\Structures\Player*
-  * *challenges* : is an array of *\ManiaLive\DedicatedApi\Structures\Challenge*.<br>Those challenges are the current tracks set on the server.
-  * *currentChallenge*: is a *\ManiaLive\DedicatedApi\Structures\Challenge* representing the current track 
-  * *nextChallenge*: is a *\ManiaLive\DedicatedApi\Structures\Challenge* representing the next track, except if a restart challenge is done.
+  * *maps* : is an array of *\ManiaLive\DedicatedApi\Structures\Map*.<br>Those maps are the current tracks set on the server.
+  * *currentMap*: is a *\ManiaLive\DedicatedApi\Structures\Map* representing the current track 
+  * *nextMap*: is a *\ManiaLive\DedicatedApi\Structures\Map* representing the next track, except if a restart challenge is done.
   * *server*: is a *\ManiaLive\DedicatedApi\Structures\ServerOptions* which represents sur value in Config file of the dedicated server
   * *gameInfos*: is a *\ManiaLive\DedicatedApi\Structures\GameInfos* which contains every information about the current game.
   * *serverStatus*: is a *\ManiaLive\DedicatedApi\Structures\Status*. It indicate whether the server is stopped, or running
   * *serverLogin*: is a string containing the login of the dedicated server.
 
-Each property is update when an event is fired by the dedicated server. This class is the first called by the ManiaLive core when it received a callback, so it’s data are allways up to date. If a data is stored in the storage system you shouldn’t need to call the server to get it. This class should be used as a read only system, do not try to edit or insert some data in any property.
+Each property is updated when an event is fired by the dedicated server. This class is the first called by the ManiaLive core when it received a callback, so it’s data are allways up to date. If a data is stored in the storage system you shouldn’t need to call the server to get it. This class should be used as a read only system, do not try to edit or insert some data in any property.
 
 = Chat Commands =
 
 You want to have interaction between the people on your dedicated server and ManiaLive, then using chat commands will be the first and simplest step!
 The Plugin class once again offers an easy wrapper function to have callbacks executed when a specific command is entered in the game.
-*\ManiaLive\Features\ChatCommand\Command registerChatCommand(string $command_name, string $callback_method, integer $parameter_count = 0, boolean $add_login = false, array $authorizedLogin = array())*
-This might be almost self explanatory. First parameter takes the chat command, without the “/”, that needs to be entered in game. Second parameter is the name of the method that is executed. parameter_count defines how many parameters are expected after the command, separated by spaces. These will be set as parameters for the callback. If add login is set to true, then your callback additionally needs to have the login of the player as first parameter. authorizedLogin is an array of the players that are allowed to use your command. It is suggested to use the admin list that is managed in your config.ini. You can access it by using the *\ManiaLive\Features\Admin\AdminGroup* and call its static method *contains(string $login)* to check whether the player that has tried to use the chat command is registered to the admin group.
+*\ManiaLive\Features\ChatCommand\Command registerChatCommand(string $commandName, string $callbackMethod, integer $parameterCount = 0, boolean $addLogin = false, array $authorizedLogin = array())*
+This might be almost self explanatory. First parameter takes the chat command, without the “/”, that needs to be entered in game. Second parameter is the name of the method that is executed. parameterCount defines how many parameters are expected after the command, separated by spaces. These will be set as parameters for the callback. If add login is set to true, then your callback additionally needs to have the login of the player as first parameter. authorizedLogin is an array of the players that are allowed to use your command. It is suggested to use the admin list that is managed in your config.ini. You can access it by using the *\ManiaLive\Features\Admin\AdminGroup* and call its static method *contains(string $login)* to check whether the player that has tried to use the chat command is registered to the admin group.
 
 = Databases =
 
@@ -267,7 +258,15 @@ Time::fromTM($timestamp, $signed = false)
 }}}
 Setting the second parameter to true will look for a negative value and if so attach a dash to the front of the string.
 
-== String ==
+== Validation ==
+
+This collection of methods can validate different types of variable, from the simplest bool, int and float to more complex ones as regular expression, ip, url and email adress.
+
+= ManiaLib Utils =
+
+There is also a useful class in ManiaLib/Utils to be mentionned
+
+== Formatting ==
 
 This collection of methods removes color codes from Trackmania strings. There are always places in the code where you want to display a name of a track or a player, but with a unified look and feel. So if you want to protect your layout from TM formatting, these are the functions to use.
 
@@ -290,27 +289,33 @@ ManiaLive brings this to a new level, you don’t have to know all details of fo
 
 == Creating a Window ==
 
-You start by creating a PHP-file that is named just like the window. Usually this file is located in the plug-in folder and within a ”Gui” and further more a “Windows” folder.
+You start by creating a PHP-file that is named just like the window. Usually this file is located in the plugin folder and within a ”Gui” and further more a “Windows” folder.
 The “Gui” folder is the super folder for all graphical components and thus contains the “Windows” folder, which is predestined for all Windows components.
 Editing this file you will create a class inside that has once again the name of the window (pay attention to case sensitive naming).
-Specified class will need to be inherited from *\ManiaLive\Gui\Windowing\Window*, the base class for all windows.
+Specified class will need to be inherited from *\ManiaLive\Gui\Window*, the base class for all windows.
 For windows there are four methods that can be overwritten, to define the behaviour and look of the window depending on what is happening:
 
-=== initializeComponents() ===
-This will be executed only once the window is being created the first time, you don’t need to draw it on the screen. It will be performed just the first time you are mentioning this window anywhere in your code. So this is the place where you should, as the name implies, create the components that you want to have on your window.
+=== onConstruct() ===
+This will be executed only once the window is being created the first time, you don’t need to draw it on the screen. It will be performed just the first time you are mentioning this window anywhere in your code. So this is the place where you should, as the name implies, construct the window.
 Components are added to a Window in two steps (this also applies for adding to a Control), first you instanciate the class, then you use the Window’s
-*addComponent(ManiaLive\Gui\Toolkit\Drawable $component)*-method to assign this component.
-Depending on whether the size of the Window is static or may be changed during the runtime you will position its components either in *initializeComponents* or *onShow*.
+*addComponent(ManiaLib\Gui\Drawable $component)*-method to assign this component.
+Depending on whether the size of the Window is static or may be changed during the runtime you will position its components either in *onConstruct*, *onResize*, *onDraw* or even *onShow*.
 
-=== onShow() ===
-Is called every time the *show()* method of the window is being called, thus on every refresh.
+=== onResize($oldX, $oldY) ===
+Called when the window's size is changed using one of the setSize(), setSizeX() or setSizeY() method.
+
+=== onMove($oldX, $oldY, $oldZ) ===
+Called when the window is moved by a call to setPosition(), setPosition[XYZ]() or setPos[XYZ]()
+
+=== onDraw() ===
+Is called every time the *draw()* method of the window is being called, thus on every refresh.
 If you want to scale and reposition your components, then do this here.
 
 === onHide() ===
 Called when the window is being removed from the screen.
 If you want to disable certain events while the window is not on the screen.
 
-=== onRecover() ===
+=== onShow() ===
 Executed whenever the window has been hidden and is recovered back to the displayed state.
 
 == Important Namespaces and its Classes ==
@@ -353,18 +358,24 @@ If you want to use a Layout, then you need to add an object instance to the Cont
   * *Spacer*
   * *VerticalFlow*
 
-=== \ManiaLive\Gui\Windowing\Controls ===
+=== \ManiaLive\Gui ===
 
-  * *ButtonResizeable*<br>Same as the normal Button element, but you can change its size.
+ * *Panel*<br>A window which already has elements to look like an ingame panel with a title, a main background and a close button. Don't forget to call parent::onConstruct when inheriting from it.
+ * *ManagedWindow*<br>A Panel which can have only one recipient and can be minimized into a taskbar.
+ * *CustomUI*<br>Each player has its own CustomUI instance. You can use this instance to show or hide default ingame UIs.
+
+=== \ManiaLive\Gui\Controls ===
+
+  * *ButtonResizable*<br>Same as the normal Button element, but you can change its size.
   * *Frame*<br>Add controls to a frame, position them and define size.<br>Apply a layout if you want.
   * *PageNavigator*<br>Helps you building a navigation for a multiple paged window.
   * *Panel*<br>Standard window background, you can even have a close button.
-  * *Tab*<br>Inherit this with another control and add an instance to 
-  * *Tabview*<br>Add controls of instance Panel, you will be able to choose one of them that will be displayed.
+  * *Tabbable*<br>Inherit this with another control and add an instance to 
+  * *TabbedPane*<br>Add Tabbable controls and you will be able to choose one of them that will be displayed.
 
-=== \ManiaLive\Gui\Windowing\Windows ===
+=== \ManiaLive\Gui\Windows ===
 
-  * *Dialog*<br>Create a simple window with predefined buttons.<br>Enable the window events for the plug-in and if dialog window is closed, get the answer property from the dialog.
+  * *Dialog*<br>Create a simple window with predefined buttons.<br>Enable the window events for the plugin and if dialog window is closed, get the answer property from the dialog.
   * *Info*<br>Just display a simple window with message inside and title.
 
 = Threading =
@@ -378,32 +389,34 @@ Due to the fact, that this is not an inbuilt functionality and relies on many ot
 
 == Creating a Thread ==
 
-The Plugin class contains a helper method that will create a thread:
+The ThreadHandler class contains a helper method that will create a thread:
 {{{
-createThread()
+launchThread()
 }}}
-This will only create one Thread per plug-in, even if you call it more than once.
-This documentation will only explain how to manage threads with the plug-in intern helper functions. If you want to discover the full potential of the threading library, you will need to look up the source code files or the more detailed phpUml documentation.
+This method returns the ID of the thread that you'll need to give to other threading methods.<br>
+This documentation will only explain how to manage threads. If you want to discover the full potential of the threading library, you will need to look up the source code files or the more detailed phpUml documentation.
 
 == Create Work ==
 
 Okay, so you have some stuff that you do want to be executed on the thread, but how do you need to prepare the data for the thread to be able to work with it?
-There is a class *\ManiaLive\Threading\Runnable* that you need to extend. This extended class now has a method *run()* that you will be able to overwrite. You can also add properties to the class to be able to store data or instructions. The run-method is what is exectued on the other process. Now that you have created your Runnable-class you need to instantiate it and if needed set properties.
+There is a interface *\ManiaLive\Threading\Runnable* that you need to implement. This interface has a method *run()* that you need to define. You can also add properties to the class to be able to store data or instructions. The run method is what is executed on the other process. Now that you have created your Runnable class you need to instantiate it and if needed set its properties.
 
-== Assign Work to a Thread ==
+== Assign Task to a Thread ==
 
-You should have an object now that is a subtype of *\ManiaLive\Threading\Runnable*, to assign it to a thread there are two possibilities. (These methods are inherited with the Plugin class)
-First you can assign the work to any thread that currently is free or least busy. If there are several threads created by plug-ins you won’t know where your work will be processed.
+You should have an object now that is a subtype of *\ManiaLive\Threading\Runnable*. To assing it to the thread you created, you just need to call the method.
 {{{
-sendWorkToThread(\ManiaLive\Threading\Runnable $work, string $method = null)
+addTask(int $threadId, ManiaLive\Threading\Runnable $task, string $callback = null)
 }}}
-Using method number two, you will always assign work to the thread created by your plug-in. This might come in handy if, for instance, if you need a resistant connection (see Dedimania).
-{{{
-sendWorkToOwnThread(ManiaLive\Threading\Runnable $work, string $method = null)
-}}}
-For the second parameter you can set a callback method within the current plugin class that will be executed once the work has been finished by the thread.
+For the third parameter you can set a callback method that will be executed once the task has been finished by the thread.
 
 == Managing Threads ==
 
 You can activate the threading events to be informed about threads that timeout or crash.
-They will be restarted automatically and all jobs that are left will be assigned to the newly started process. If a process chrashs no jobs, except the one that has crashed the thread, will be lost.
+If a process crashes or times out, it will be restarted and the last task will be tried again or discarded, depending on the threading configuration and how many times it has been tried before.
+
+== Killing Threads ==
+
+When you don't need a thread anymore, because you won't have any other task to do or your plugin is unloaded, don't forget to kill it so it won't stay running until ManiaLive is closed.
+{{{
+killThread(int $threadId)
+}}}
