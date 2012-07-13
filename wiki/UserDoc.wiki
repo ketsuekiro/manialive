@@ -157,7 +157,6 @@ The admins sub-module manages a list of administrators. You can add new admins t
 {{{
 manialive.admins[] = 'login'
 }}}
-|| http://files.manialive.com/doc/2_edit_config.png ||
 
 === Plugins ===
 Is a module, that dynamically loads plugins on application startup. Add a new plugin, that you want to load, by adding a line:
