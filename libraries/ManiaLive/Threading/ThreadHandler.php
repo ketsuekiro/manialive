@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- *
+ * 
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -26,10 +26,11 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 	private $buffers = array();
 	private $pendings = array();
 	private $tries = array();
-
+	
 	private $database;
+	private $logger;
 	private $tick = 0;
-
+	
 	private $enabled = false;
 	private $deadThreadsCount = 0;
 	private $commandsCount = 0;
@@ -39,6 +40,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 	protected function __construct()
 	{
 		$this->enabled = extension_loaded('mysql') && Config::getInstance()->enabled;
+		$this->logger = Logger::getLog('threading');
 
 		if($this->enabled)
 		{
@@ -51,7 +53,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		}
 		else
 		{
-			Logger::debug('Application started with threading disabled!', true, array('Process #'.getmypid()));
+			$this->logger->write('Application started with threading disabled!', array('Process #'.getmypid()));
 			$this->buffers[0] = array();
 		}
 
@@ -69,7 +71,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 				'MySQL',
 				$dbConfig->port
 			);
-
+		
 		$this->database->execute(
 				'CREATE TABLE IF NOT EXISTS `ThreadingProcesses` ('.
 					'`parentId` INT(10) UNSIGNED NOT NULL,'.
@@ -78,7 +80,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 				')'.
 				'COLLATE=\'utf8_general_ci\''
 			);
-
+		
 		$this->database->execute(
 				'CREATE TABLE IF NOT EXISTS `ThreadingData` ('.
 					'`parentId` INT(10) UNSIGNED NOT NULL,'.
@@ -88,7 +90,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 				')'.
 				'COLLATE=\'utf8_general_ci\''
 			);
-
+		
 		$this->database->execute(
 				'CREATE TABLE IF NOT EXISTS `ThreadingCommands` ('.
 					'`parentId` INT(10) UNSIGNED NOT NULL,'.
@@ -102,7 +104,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 				')'.
 				'COLLATE=\'utf8_general_ci\''
 			);
-
+		
 		$deadPids = $this->database->execute(
 				'SELECT parentId FROM ThreadingProcesses WHERE parentId=%d OR DATE_ADD(lastLive, INTERVAL 2 MINUTE) < NOW()',
 				getmypid()
@@ -154,7 +156,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		$this->buffers[$threadId] = array();
 		$this->pendings[$threadId] = array();
 		Dispatcher::dispatch(new Event(Event::ON_THREAD_START, $threadId));
-		Logger::debug('Thread #'.$threadId.' started!', true, array('Process #'.getmypid()));
+		$this->logger->write('Thread #'.$threadId.' started!', array('Process #'.getmypid()));
 
 		return $threadId;
 	}
@@ -196,7 +198,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		proc_terminate($threadHandle);
 		proc_close($threadHandle);
 		Dispatcher::dispatch(new Event(Event::ON_THREAD_KILLED, $threadId));
-		Logger::debug('Thread #'.$threadId.' stopped', true, array('Process #'.getmypid()));
+		$this->logger->write('Thread #'.$threadId.' stopped', array('Process #'.getmypid()));
 
 		$this->database->execute('DELETE FROM ThreadingCommands WHERE threadId=%d AND parentId=%d', $threadId, getmypid());
 
@@ -216,12 +218,12 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		$commandDiscarded = false;
 		if(empty($this->pendings[$threadId]))
 		{
-			Looger::debug('Thread #'.$threadId.' died...', true, array('Process #'.getmypid()));
+			$this->logger->write('Thread #'.$threadId.' died...', array('Process #'.getmypid()));
 			Dispatcher::dispatch(new Event(Event::ON_THREAD_DIES, $threadId));
 		}
 		else
 		{
-			Looger::debug('Thread #'.$threadId.' timed out...', true, array('Process #'.getmypid()));
+			$this->logger->write('Thread #'.$threadId.' timed out...', array('Process #'.getmypid()));
 			Dispatcher::dispatch(new Event(Event::ON_THREAD_TIMES_OUT, $threadId));
 			// If we already tried this command too many times, we discard it...
 			$command = reset($this->pendings[$threadId]);
@@ -235,7 +237,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 					);
 				unset($this->pendings[$threadId][$lastCommandId]);
 				unset($this->tries[$lastCommandId]);
-				Looger::debug('Command #'.$lastCommandId.' has been discarded after '.Config::getInstance()->maxTries.' unsuccessful tries...', true, array('Process #'.getmypid()));
+				$this->logger->write('Command #'.$lastCommandId.' has been discarded after '.Config::getInstance()->maxTries.' unsuccessful tries...', array('Process #'.getmypid()));
 				$commandDiscarded = true;
 			}
 		}
@@ -248,8 +250,8 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		$this->threads[$threadId] = $this->spawnThread($threadId);
 		$this->lastTick[$threadId] = $this->tick;
 		Dispatcher::dispatch(new Event(Event::ON_THREAD_RESTART, $threadId));
-		Logger::debug('Thread #'.$threadId.' restarted!', true, array('Process #'.getmypid()));
-
+		$this->logger->write('Thread #'.$threadId.' restarted!', array('Process #'.getmypid()));
+		
 		if($commandDiscarded)
 			$command->fail();
 	}

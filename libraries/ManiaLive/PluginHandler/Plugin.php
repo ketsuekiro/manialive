@@ -466,18 +466,16 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	 * Write message into the plugin's logfile.
 	 * Prefix with Plugin's name.
 	 * @param string $text
-	 * @deprecated since version 2.7
 	 */
 	final protected function writeLog($text)
 	{
-		Logger::debug($text, true, array($this->author.'_'.$this->name));
+		Logger::getLog($this->author.'_'.$this->name)->write($text);
 	}
 
 	/**
 	 * Write message onto the commandline.
 	 * Prefix with Plugin's name and
 	 * @param string $text
-	 * @deprecated since version 2.7
 	 */
 	final protected function writeConsole($text)
 	{

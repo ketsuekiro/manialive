@@ -22,6 +22,7 @@ class Thread extends \ManiaLib\Utils\Singleton
 	private $threadId;
 	private $parentId;
 	private $database;
+	private $logger;
 	private $taskBuffer = array();
 
 	protected function __construct()
@@ -30,10 +31,11 @@ class Thread extends \ManiaLib\Utils\Singleton
 		$this->threadId = (int) $options['threadId'];
 		$this->parentId = (int) $options['parentId'];
 		$this->initDatabase();
+		$this->logger = \ManiaLive\Utilities\Logger::getLog('threading');
 
-		\ManiaLive\Utilities\Logger::debug('Thread started successfully!',true, array('Process #'.$this->parentId.'.'.$this->threadId));
+		$this->logger->write('Thread started successfully!', array('Process #'.$this->parentId.'.'.$this->threadId));
 		if($this->database->isConnected())
-			\ManiaLive\Utilities\Logger::debug('DB is connected, waiting for jobs ...', true, array('Process #'.$this->parentId.'.'.$this->threadId));
+			$this->logger->write('DB is connected, waiting for jobs ...', array('Process #'.$this->parentId.'.'.$this->threadId));
 	}
 
 	private function initDatabase()
@@ -43,7 +45,7 @@ class Thread extends \ManiaLib\Utils\Singleton
 		$dbConfig = \ManiaLive\Database\Config::getInstance();
 		foreach($options as $key => $value)
 			$dbConfig->{lcfirst(substr($key, 2))} = $value;
-
+		
 		$this->database = Connection::getConnection(
 				$dbConfig->host,
 				$dbConfig->username,
@@ -99,8 +101,8 @@ class Thread extends \ManiaLib\Utils\Singleton
 
 			if($task)
 			{
-				\ManiaLive\Utilities\Logger::debug('Executing Command #'.$task['commandId'].'...', true, array('Process #'.$this->parentId.'.'.$this->threadId));
-
+				$this->logger->write('Executing Command #'.$task['commandId'].'...', array('Process #'.$this->parentId.'.'.$this->threadId));
+				
 				$startTime = microtime(true);
 				$result = $task['task']->run();
 				$timeTaken = (microtime(true) - $startTime) * 1000;
@@ -112,8 +114,8 @@ class Thread extends \ManiaLib\Utils\Singleton
 						$task['commandId'],
 						$this->parentId
 					);
-
-				\ManiaLive\Utilities\Logger::debug('Command #'.$task['commandId'].' done in '.round($timeTaken, 3).' ms!',true, array('Process #'.$this->parentId.'.'.$this->threadId));
+				
+				$this->logger->write('Command #'.$task['commandId'].' done in '.round($timeTaken, 3).' ms!', array('Process #'.$this->parentId.'.'.$this->threadId));
 			}
 			else
 				sleep(1);
@@ -132,7 +134,7 @@ class Thread extends \ManiaLib\Utils\Singleton
 					$this->threadId,
 					$this->parentId
 				);
-
+			
 			while(($task = $tasks->fetchAssoc()))
 			{
 				$task['task'] = unserialize(base64_decode($task['task']));
