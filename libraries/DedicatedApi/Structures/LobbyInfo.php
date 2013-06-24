@@ -14,7 +14,6 @@ class LobbyInfo extends AbstractStructure
 	public $isLobby;
 	public $lobbyPlayers;
 	public $lobbyMaxPlayers;
-	public $lobbyPlayersLevel;
 }
 
 ?>
