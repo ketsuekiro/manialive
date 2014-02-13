@@ -1,5 +1,5 @@
 #summary An introduction to ManiaLive for users.
-#labels Featured,Phase-Requirements,Phase-Deploy
+#labels Phase-Requirements,Phase-Deploy
 
 <wiki:toc max_depth="2" />
 
