@@ -1,5 +1,4 @@
 #summary History of changes that has been made in each version
-#labels Featured
 
 = History of Changes =
 
