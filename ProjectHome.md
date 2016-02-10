@@ -1,0 +1,1 @@
+The project has been moved to GitHub: https://github.com/maniaplanet/manialive
